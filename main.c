@@ -83,7 +83,7 @@ int main() {
             student_t *result = (student_t *)(*methods[choice - 1])(head);
 
             // Check if the result of the called method is not NULL
-            if(result) {
+            if(result || choice == 3) {
                 // Set the head value to the result from the function
                 head = result;
             }
@@ -270,10 +270,8 @@ void *push(student_t *head) {
         // Remove the new line character
         tmp[strcmp(tmp, "\n")] = '\0';
         
-        printf("\n\n\n\n%s\n\n\n\n", tmp);
-        
         // Check if the entered GPA is valid
-        if(((tmpGpa = (float)strtof(tmp, NULL)) == 0) && tmp[0] != '0' || tmpGpa < 0) {
+        if((((tmpGpa = (float)strtof(tmp, NULL)) == 0) && tmp[0] != '0') || tmpGpa < 0) {
             // Display an error message
             printf("\nOops... That's an invalid GPA.  Please try again.\n\n");
             
@@ -324,23 +322,32 @@ void *pop(student_t *head) {
         // Return NULL as nothing has changed on the stack
         return NULL;
     }else{
-        // Create the needed variable 
-        int ch;
-        
         // Print the confirmation message to remove the user
-        printf("Are you sure that you want to remove the student? (y/Y - Yes): ");
+        printf("\nAre you sure that you want to remove the student? [y/Y - Yes | n/N - No]: ");
+        
+        // Store the entered character into the tmp variable
+        int ch = getchar();
         
         // Check if the user really wants to remove the student
-        if((ch = getchar()) != EOF && (ch != 'y' || ch != 'Y')) {            
+        if(ch != EOF && (ch != 'y' && ch != 'Y')) {
+            // Formatting new line string
+            printf("\n");
+            
             // Return null as the nothing has modified the stack
             return NULL;
         }else{
             // Create a new student item that holds the head item
             student_t *popped = head;
-
-            // Move the head to the next stack item
-           head = head->next;
-
+            
+            // Check if there is another item in the stack
+            if(head->next != NULL) {
+                // Move the head to the next stack item
+                head = head->next;
+            }else{
+                // Set the head node to NULL
+                head = NULL;
+            }
+               
             // Free the memory assignment of the popped students name
             free(popped->name);
 
@@ -414,7 +421,7 @@ void *printTop(student_t *head) {
         printf("\nLooks like the Student List is empty.  Please add an item to the list to view to the top student.\n\n");
     }else{
         // Print function starter
-        printf("\n\n--------- Printing the First Student ----------\n");
+        printf("\n\n------------ Printing the First Student -------------\n");
         
         // Call the function that prints student information in the console for the first (top) student in the stack
         printStudent(head);
@@ -441,7 +448,7 @@ void *printAll(student_t *head) {
         student_t *current = head;
         
         // Print function starter
-        printf("\n\n-------------- Printing Students List -------------\n");
+        printf("\n\n--------------- Printing Students List --------------\n");
         
         // Check if the next pointer is NULL or not
         if(current->next == NULL) {
