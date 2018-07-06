@@ -270,10 +270,12 @@ void *push(student_t *head) {
         // Remove the new line character
         tmp[strcmp(tmp, "\n")] = '\0';
         
+        printf("\n\n\n\n%s\n\n\n\n", tmp);
+        
         // Check if the entered GPA is valid
-        if((tmp[0] != '0' && (tmpGpa = (float)strtof(tmp, NULL)) == 0) || tmpGpa < 0) {
+        if(((tmpGpa = (float)strtof(tmp, NULL)) == 0) && tmp[0] != '0' || tmpGpa < 0) {
             // Display an error message
-            printf("\nOops... That is an invalid GPA.  Please try again.\n\n");
+            printf("\nOops... That's an invalid GPA.  Please try again.\n\n");
             
             // Set the tmpGpa to 0 for error and loop continuation
             tmpGpa = -1;
