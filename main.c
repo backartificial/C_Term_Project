@@ -301,8 +301,14 @@ void *push(student_t *head) {
         }
     } while(tmpGpa == 0);
     
-    // Assign the next item in the stack to the current stack item
-    tmpStudent->next = head;
+    // Check if head is not NULL
+    if(head != NULL) {
+        // Assign the next item in the stack to the current stack item
+        tmpStudent->next = head;
+    }else{
+        // Assign the next item in the stack to the current stack item
+        tmpStudent->next = NULL;
+    }
     
     // Assign the head to the created student
     head = tmpStudent;
@@ -343,29 +349,20 @@ void *pop(student_t *head) {
             head = NULL;
         }
 
-        // Check if the popped item name is not NULL
-        if (popped->name) {
-            // Free the memory assignment of the popped students name
-            free(popped->name);
-        }
-
-        // Check if the popped item school name is not NULL
-        if (popped->schoolName) {
-            // Free the memory assignment of the popped students school name
-            free(popped->schoolName);
-        }
-
-        // Check if the popped item program name is not NULL
-        if (popped->programName) {
-            // Free the memory assignment of the popped students program name
-            free(popped->programName);
-        }
-
+        // Free the memory assignment of the popped students name
+        free(popped->name);
+        
+        // Free the memory assignment of the popped students school name
+        free(popped->schoolName);
+        
+        // Free the memory assignment of the popped students program name
+        free(popped->programName);
+        
         // Free the memory assignment of the popped student item
         free(popped);
         
         // Display Success pop message
-        printf("\nTop Student Successfully removed from Stack.\n\n");
+        printf("\nTop Student Successfully removed from the Stack.\n\n");
 
         // Return the new head of the students stack
         return head;
@@ -522,5 +519,5 @@ void *exitStack(student_t *head) {
  */
 void instructions() {
     // Display the different menu options
-    printf("Student Stack Management\n------------------------------------------------\n1. Top (Print the Top item of the Student Stack)\n2. Push (Add an item to the Student Stack)\n3. Pop (Remove an item from the Student Stack\n4. Print (Prints the items of the Student Stack)\n5. Exit Stack Section\n------------------------------------------------\nPlease Enter Menu Option: ");
+    printf("Student Stack Management\n------------------------------------------------\n1. Print the Top item of the Student Stack\n2. Add an item to the Student Stack\n3. Remove an item from the Student Stack\n4. Prints the items of the Student Stack\n5. Exit Stack Section\n------------------------------------------------\nPlease Enter Menu Option: ");
 }
