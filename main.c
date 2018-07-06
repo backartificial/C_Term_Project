@@ -55,8 +55,9 @@ void *printStudent(student_t*); // Function used to display the actual student i
 void *exitStack(student_t*); // Function used to exit out of the application section
 void instructions(); // Function to display the menu options
 
-// Define Class Variable
+// Define Class Variables
 char tmp[255] = {0};
+bool exitingApplication = false;
 
 /**
  * 
@@ -83,7 +84,7 @@ int main() {
             student_t *result = (student_t *)(*methods[choice - 1])(head);
 
             // Check if the result of the called method is not NULL
-            if(result || choice == 3) {
+            if(result || (choice == 3 && head->next != NULL)) {
                 // Set the head value to the result from the function
                 head = result;
             }
@@ -122,12 +123,12 @@ void *push(student_t *head) {
     }
 
     // Print prompt for entering student information
-    printf("\nPlease Fill the Following Prompts to add a Student to the List");
+    printf("\nPlease Fill the Following Prompts to add a Student to the List\n");
     
     // Perform a loop to get the Students ID
     do {
         // Display a prompt message for the students id
-        printf("\nPlease Enter the Students ID (Number): ");
+        printf("Please Enter the Students ID (Number): ");
         
         // Get the input from stdin and store it into the tmp array
         fgets(tmp, (255 * sizeof(char)), stdin);
@@ -322,50 +323,59 @@ void *pop(student_t *head) {
         // Return NULL as nothing has changed on the stack
         return NULL;
     }else{
-        // Print the confirmation message to remove the user
-        printf("\nAre you sure that you want to remove the student? [y/Y - Yes | n/N - No]: ");
-        
-        // Store the entered character into the tmp variable
-        int ch = getchar();
-        
-        // Check if the user really wants to remove the student
-        if(ch != EOF && (ch != 'y' && ch != 'Y')) {
-            // Formatting new line string
-            printf("\n");
-            
-            // Return null as the nothing has modified the stack
-            return NULL;
-        }else{
-            // Create a new student item that holds the head item
-            student_t *popped = head;
-            
-            // Check if there is another item in the stack
-            if(head->next != NULL) {
-                // Move the head to the next stack item
-                head = head->next;
-            }else{
-                // Set the head node to NULL
-                head = NULL;
+        // Check if the user is exiting the application and skip the confirmation of removal
+        if(!exitingApplication) {
+            // Print the confirmation message to remove the user
+            printf("\nAre you sure that you want to remove the student? [y/Y - Yes | n/N - No]: ");
+
+            // Store the entered character into the tmp variable
+            int ch = getchar();
+
+            // Check if the user really wants to remove the student
+            if(ch != EOF && (ch != 'y' && ch != 'Y')) {
+                // Formatting new line string
+                printf("\n");
+
+                // Flush the Buffer
+                FLUSH;
+
+                // Return null as the nothing has modified the stack
+                return NULL;
             }
-               
-            // Free the memory assignment of the popped students name
-            free(popped->name);
-
-            // Free the memory assignment of the popped students school name
-            free(popped->schoolName);
-
-            // Free the memory assignment of the popped students program name
-            free(popped->programName);
-
-            // Free the memory assignment of the popped student item
-            free(popped);
-
-            // Display Success pop message
-            printf("\nFirst Student Successfully removed from the List.\n\n");
-
-            // Return the new head of the students stack
-            return head;
         }
+        
+        // Create a new student item that holds the head item
+        student_t *popped = head;
+
+        // Check if there is another item in the stack
+        if(head->next != NULL) {
+            // Move the head to the next stack item
+            head = head->next;
+        }else{
+            // Set the head node to NULL
+            head = NULL;
+        }
+
+        // Free the memory assignment of the popped students name
+        free(popped->name);
+
+        // Free the memory assignment of the popped students school name
+        free(popped->schoolName);
+
+        // Free the memory assignment of the popped students program name
+        free(popped->programName);
+
+        // Free the memory assignment of the popped student item
+        free(popped);
+
+        // Display Success pop message
+        printf("\nFirst Student Successfully removed from the List.\n\n");
+
+        // Flush the Buffer
+        FLUSH;
+
+        // Return the new head of the students stack
+        return head;
     }
 }
 
@@ -505,6 +515,9 @@ void *exitStack(student_t *head) {
     if(head != NULL) {
         // Create a tmp student that points to the head of the student stack used for iteration
         student_t *current = head;
+        
+        // Set the flag to application is closing (true)
+        exitingApplication = true;
 
         // Look through the student stack while the next item is not NULL
         while (current->next != NULL) {
