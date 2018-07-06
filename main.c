@@ -72,10 +72,7 @@ int main() {
         instructions();
 
         // Check if the entered menu option is valid
-        if(scanf("%d", &choice) && choice >= 1 && choice <= 5) {
-            // Flush the buffer
-            FLUSH;
-            
+        if(scanf("%d", &choice) && choice >= 1 && choice <= 5) {            
             // Calls the correct method from the method array
             student_t *result = (student_t *)(*methods[choice - 1])(head);
 
@@ -87,10 +84,10 @@ int main() {
         }else{
             // Display an invalid menu option error message
             printf("\nOops... That is an invalid menu option.  Please try again.\n\n");
-            
-            // Flush the buffer
-            FLUSH;
         }
+        
+        // Flush the buffer
+        FLUSH;
     }
 }
 
@@ -104,7 +101,7 @@ int main() {
  */
 void *push(student_t *head) {
     // Create the needed function variables
-    student_t* tmpStudent = (student_t*)malloc(1 * sizeof(student_t));
+    student_t* tmpStudent = (student_t*)malloc(sizeof(student_t));
     char tmp[255] = {0};
     int tmpId;
     int tmpGraduatingYear = 0;
@@ -134,17 +131,14 @@ void *push(student_t *head) {
             
             // Set the tmpId to 0 for error and loop continuation
             tmpId = 0;
-            
-            // Flush the Buffer
-            FLUSH;
         }else{
             // Assign the tmpStudent it's id
             tmpStudent->id = tmpId;
-            
-            // Flush the Buffer
-            FLUSH;
         }
     } while(tmpId == 0);
+    
+    // Flush the buffer
+    FLUSH;
 
     // Perform a loop to get the Students Name
     do {
@@ -176,6 +170,9 @@ void *push(student_t *head) {
             FLUSH;
         }
     } while(strlen(tmp) == 0);
+    
+    // Flush the buffer
+    FLUSH;
 
     // Perform the loop and get the Students School Name
     do {
@@ -207,6 +204,9 @@ void *push(student_t *head) {
             FLUSH;
         }
     } while(strlen(tmp) == 0);
+    
+    // Flush the buffer
+    FLUSH;
             
     // Perform the loop and get the Students Program Name
     do {
@@ -239,6 +239,9 @@ void *push(student_t *head) {
         }
     } while(strlen(tmp) == 0);
     
+    // Flush the buffer
+    FLUSH;
+    
     // Perform a loop to get the Students graduating year
     do {
         // Display the prompt for the students graduating year
@@ -262,6 +265,9 @@ void *push(student_t *head) {
             FLUSH;
         }
     } while(tmpGraduatingYear == 0);
+    
+    // Flush the buffer
+    FLUSH;
 
     // Perform a loop to get the Students GPA
     do {
@@ -286,6 +292,9 @@ void *push(student_t *head) {
             FLUSH;
         }
     } while(tmpGpa == 0);
+    
+    // Flush the buffer
+    FLUSH;
     
     // Check if head is not NULL
     if(head != NULL) {
@@ -330,9 +339,7 @@ void *pop(student_t *head) {
         printf("Are you sure that you want to remove the student? (y/Y): ");
         
         // Check if the user really wants to remove the student
-        if((ch = getchar()) != EOF && ch != 'y') {
-            
-            
+        if((ch = getchar()) != EOF && (ch != 'y' && ch != 'Y')) {            
             // Return null as the nothing has modified the stack
             return NULL;
         }else{
