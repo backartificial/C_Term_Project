@@ -48,7 +48,7 @@ typedef struct node {
 // Define the function prototypes
 void *push(student_t*); // Function used to add an item to the stack
 void *pop(student_t*); // Function used to remove an item from the stack
-bool checkUniqueID(student_t*, int); // Function used to check if the passed int (ID) refers to a unique ID
+bool isUniqueId(student_t*, int); // Function used to check if the passed int (ID) refers to a unique ID
 void *printTop(student_t*); // Function used to print only the top item of the stack
 void *printAll(student_t*); // Function used to print the students in the stack
 void *printStudent(student_t*); // Function used to display the actual student information to the console
@@ -58,8 +58,6 @@ void instructions(); // Function to display the menu options
 /**
  * 
  * This method is used to run the core of the application section
- * 
- * @return 0 on application ending
  * 
  */
 int main() {
@@ -94,9 +92,6 @@ int main() {
             FLUSH;
         }
     }
-    
-    // Return successful
-    return 0;
 }
 
 /**
@@ -125,7 +120,7 @@ void *push(student_t *head) {
     }
 
     // Print prompt for entering student information
-    printf("\nPlease Fill the Following Prompts to add a Student to the Stack");
+    printf("\nPlease Fill the Following Prompts to add a Student to the List");
     
     // Perform a loop to get the Students ID
     do {
@@ -133,7 +128,7 @@ void *push(student_t *head) {
         printf("\nPlease Enter the Students ID (Number): ");
         
         // Check if the entered ID is valid
-        if (scanf("%d", &tmpId) && (tmpId < 1 && !checkUniqueID(head, tmpId))) {
+        if (scanf("%d", &tmpId) && (tmpId < 1 && !isUniqueId(head, tmpId))) {
             // Display an error message
             printf("\nOops... That is an invalid Student Id.  Please try again.\n\n");
             
@@ -164,7 +159,7 @@ void *push(student_t *head) {
         tmp[strcspn(tmp, "\r")] = 0;
         
         // Check if a name has been entered
-        if(tmp == NULL || strlen(tmp) == 0) {
+        if(strlen(tmp) == 0) {
             // Display error message
             printf("\nOops... That is an invalid Student Name.  Please try again.\n\n");
             
@@ -180,10 +175,7 @@ void *push(student_t *head) {
             // Flush the Buffer
             FLUSH;
         }
-    } while(tmp == NULL || strlen(tmp) == 0);
-            
-    // Clear the tmp array
-    memset(tmp, '\0', 255);
+    } while(strlen(tmp) == 0);
 
     // Perform the loop and get the Students School Name
     do {
@@ -198,7 +190,7 @@ void *push(student_t *head) {
         tmp[strcspn(tmp, "\r")] = 0;
         
         // Check if a school name has been entered
-        if(tmp == NULL || strlen(tmp) == 0) {
+        if(strlen(tmp) == 0) {
             // Display error message
             printf("\nOops... That is an invalid School Name.  Please try again.\n\n");
             
@@ -214,10 +206,7 @@ void *push(student_t *head) {
             // Flush the Buffer
             FLUSH;
         }
-    } while(tmp == NULL || strlen(tmp) == 0);
-            
-    // Clear the tmp array
-    memset(tmp, '\0', 255);
+    } while(strlen(tmp) == 0);
             
     // Perform the loop and get the Students Program Name
     do {
@@ -232,7 +221,7 @@ void *push(student_t *head) {
         tmp[strcspn(tmp, "\r")] = 0;
         
         // Check if a program name has been entered
-        if(tmp == NULL || strlen(tmp) == 0) {
+        if(strlen(tmp) == 0) {
             // Display error message
             printf("\nOops... That is an invalid Program Name.  Please try again.\n\n");
             
@@ -248,10 +237,7 @@ void *push(student_t *head) {
             // Flush the Buffer
             FLUSH;
         }
-    } while(tmp == NULL || strlen(tmp) == 0);
-            
-    // Clear the tmp array
-    memset(tmp, '\0', 255);
+    } while(strlen(tmp) == 0);
     
     // Perform a loop to get the Students graduating year
     do {
@@ -332,40 +318,51 @@ void *pop(student_t *head) {
     // Check if the head is NULL
     if (head == NULL) {
         // Display error message 
-        printf("\nOops... Unable to remove student from stack as there are not students in the stack.\n\n");
+        printf("\nOops... Unable to remove student from the list as there are no students in the list.\n\n");
         
         // Return NULL as nothing has changed on the stack
         return NULL;
     }else{
-        // Create a new student item that holds the head item
-        student_t *popped = head;
-
-        // Check if there is another item in the stack
-        if(head->next != NULL) {
-            // Move the head to the next stack item
-            head = head->next;
+        // Create the needed variable 
+        int ch;
+        
+        // Print the confirmation message to remove the user
+        printf("Are you sure that you want to remove the student? (y/Y): ");
+        
+        // Check if the user really wants to remove the student
+        if((ch = getchar()) != EOF && ch != 'y') {
+            
+            
+            // Return null as the nothing has modified the stack
+            return NULL;
         }else{
-            // Set the head node to NULL
-            head = NULL;
+            // Create a new student item that holds the head item
+            student_t *popped = head;
+
+            // Check if there is another item in the stack
+            if(head->next != NULL) {
+                // Move the head to the next stack item
+                head = head->next;
+            }
+
+            // Free the memory assignment of the popped students name
+            free(popped->name);
+
+            // Free the memory assignment of the popped students school name
+            free(popped->schoolName);
+
+            // Free the memory assignment of the popped students program name
+            free(popped->programName);
+
+            // Free the memory assignment of the popped student item
+            free(popped);
+
+            // Display Success pop message
+            printf("\nFirst Student Successfully removed from the List.\n\n");
+
+            // Return the new head of the students stack
+            return head;
         }
-
-        // Free the memory assignment of the popped students name
-        free(popped->name);
-        
-        // Free the memory assignment of the popped students school name
-        free(popped->schoolName);
-        
-        // Free the memory assignment of the popped students program name
-        free(popped->programName);
-        
-        // Free the memory assignment of the popped student item
-        free(popped);
-        
-        // Display Success pop message
-        printf("\nTop Student Successfully removed from the Stack.\n\n");
-
-        // Return the new head of the students stack
-        return head;
     }
 }
 
@@ -378,7 +375,7 @@ void *pop(student_t *head) {
  * @return [true - When the passed id is unique | false - When the passed id is not unique]
  * 
  */
-bool checkUniqueID(student_t *head, int id) {
+bool isUniqueId(student_t *head, int id) {
     // Check if the head item is not NULL
     if(head != NULL) {
         // Create a tmp student that points to the head of the student stack used for iteration
@@ -412,10 +409,10 @@ void *printTop(student_t *head) {
     // Check if the head item of the stack is empty
     if (head == NULL) {
         // Display an empty student stack message
-        printf("\nLooks like the Student Stack is empty.  Please add an item to the stack to view to the top item.\n\n");
+        printf("\nLooks like the Student List is empty.  Please add an item to the list to view to the top student.\n\n");
     }else{
         // Print function starter
-        printf("\n\n--------- Printing the First (Top) Student ----------\n");
+        printf("\n\n--------- Printing the First Student ----------\n");
         
         // Call the function that prints student information in the console for the first (top) student in the stack
         printStudent(head);
@@ -436,29 +433,32 @@ void *printAll(student_t *head) {
     // Check if the passed in head is NULL
     if(head == NULL) {
         // Display an empty student stack message
-        printf("\nLooks like the Student Stack is empty.  Please add items to the stack to view them.\n\n");
+        printf("\nLooks like the Student List is empty.  Please add items to the list to view them.\n\n");
     }else{
         // Create a tmp student that points to the head of the student stack used for iteration
         student_t *current = head;
         
+        // Print function starter
+        printf("\n\n-------------- Printing Students List -------------\n");
+        
         // Check if the next pointer is NULL or not
         if(current->next == NULL) {
-            // Print function starter
-            printf("\n\n-------------- Printing all the Student -------------\n");
-
             // Call the function that prints student information in the console for the iterated student in the stack
             printStudent(current);
         }else{
             // Look through the student stack while the next item is not NULL
             while (current->next != NULL) {
-                // Print function starter
-                printf("\n\n-------------- Printing all the Student -------------\n");
-
                 // Call the function that prints student information in the console for the iterated student in the stack
                 printStudent(current);
 
                 // Move to the next item in the stack
                 current = current->next;
+            }
+            
+            // Check if the next pointer is NULL or not
+            if(current->next == NULL) {
+                // Call the function that prints student information in the console for the iterated student in the stack
+                printStudent(current);
             }
         }
     }
@@ -500,13 +500,12 @@ void *exitStack(student_t *head) {
             pop(current);
         }
 
-        // Free the current and head student from memory
+        // Free the current student from memory
         free(current);
-        free(head);
     }
     
     // Print the exiting message
-    printf("\nExiting Stack Application Section.\n\n");
+    printf("\nClosing Application Section.\n\n");
     
     // Exit the application without error
     exit(0);
@@ -518,6 +517,6 @@ void *exitStack(student_t *head) {
  * 
  */
 void instructions() {
-    // Display the different menu options
-    printf("Student Stack Management\n------------------------------------------------\n1. Print the Top item of the Student Stack\n2. Add an item to the Student Stack\n3. Remove an item from the Student Stack\n4. Prints the items of the Student Stack\n5. Exit Stack Section\n------------------------------------------------\nPlease Enter Menu Option: ");
+    // Display the menu options
+    printf("Student List Management\n------------------------------------------------\n1. Print First Student\n2. Add Student\n3. Remove First Student\n4. Prints Student List\n5. Close Section\n------------------------------------------------\nPlease Enter Menu Option: ");
 }
