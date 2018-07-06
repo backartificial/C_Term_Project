@@ -2,7 +2,7 @@
  * File: Stack_ClassProject_Part_A/structure.c
  * Assignment: Final_Project
  * Creation date: July 3, 2018
- * Last Modified: July 5, 2018 
+ * Last Modified: July 6, 2018 
  * 
  * Group Members:
  *    - James Grau
@@ -55,6 +55,9 @@ void *printStudent(student_t*); // Function used to display the actual student i
 void *exitStack(student_t*); // Function used to exit out of the application section
 void instructions(); // Function to display the menu options
 
+// Define Class Variable
+char tmp[255] = {0};
+
 /**
  * 
  * This method is used to run the core of the application section
@@ -70,9 +73,12 @@ int main() {
     while(true) {
         // Call the method used to display the menu options
         instructions();
+        
+        // Get the input from stdin and store it into the tmp variable
+        fgets(tmp, (255 * sizeof(char)), stdin);
 
         // Check if the entered menu option is valid
-        if(scanf("%d", &choice) && choice >= 1 && choice <= 5) {            
+        if((choice = (int)strtol(tmp, NULL, 10)) != 0 && (choice >= 1 && choice <= 5)) {
             // Calls the correct method from the method array
             student_t *result = (student_t *)(*methods[choice - 1])(head);
 
@@ -102,10 +108,9 @@ int main() {
 void *push(student_t *head) {
     // Create the needed function variables
     student_t* tmpStudent = (student_t*)malloc(sizeof(student_t));
-    char tmp[255] = {0};
-    int tmpId;
+    int tmpId = 0;
     int tmpGraduatingYear = 0;
-    float tmpGpa = 0;
+    float tmpGpa = -1;
     
     // Check if memory cannot be allocate for the tmpStudent
     if(tmpStudent == NULL) {
@@ -124,8 +129,14 @@ void *push(student_t *head) {
         // Display a prompt message for the students id
         printf("\nPlease Enter the Students ID (Number): ");
         
+        // Get the input from stdin and store it into the tmp array
+        fgets(tmp, (255 * sizeof(char)), stdin);
+        
+        // Remove the new line character from the string
+        tmp[strcspn(tmp, "\n")] = 0;        
+        
         // Check if the entered ID is valid
-        if (scanf("%d", &tmpId) && (tmpId < 1 && !isUniqueId(head, tmpId))) {
+        if((tmpId = (int)strtol(tmp, NULL, 10)) == 0 || tmpId < 1 || !isUniqueId(head, tmpId)) {
             // Display an error message
             printf("\nOops... That is an invalid Student Id.  Please try again.\n\n");
             
@@ -135,10 +146,10 @@ void *push(student_t *head) {
             // Assign the tmpStudent it's id
             tmpStudent->id = tmpId;
         }
-    } while(tmpId == 0);
-    
-    // Flush the buffer
-    FLUSH;
+        
+        // Flush the buffer
+        FLUSH;
+    } while(tmpId == 0);    
 
     // Perform a loop to get the Students Name
     do {
@@ -148,31 +159,24 @@ void *push(student_t *head) {
         // Get the input of the students name
         fgets(tmp, (255 * sizeof(char)), stdin);
         
-        // Remove the new line and return character from the string
+        // Remove the new line character from the string
         tmp[strcspn(tmp, "\n")] = 0;
-        tmp[strcspn(tmp, "\r")] = 0;
         
         // Check if a name has been entered
         if(strlen(tmp) == 0) {
             // Display error message
-            printf("\nOops... That is an invalid Student Name.  Please try again.\n\n");
-            
-            // Flush the Buffer
-            FLUSH;
+            printf("\nOops... That's an invalid Student Name.  Please try again.\n\n");
         }else{
             // Allocate the space for the students name on the heap
             tmpStudent->name = (char*)malloc((strlen(tmp) + 1) * sizeof(char));
             
             // Assign the student to it's name
             tmpStudent->name = strncpy(tmpStudent->name, tmp, (strlen(tmp) + 1));
-            
-            // Flush the Buffer
-            FLUSH;
         }
+        
+        // Flush the Buffer
+        FLUSH;
     } while(strlen(tmp) == 0);
-    
-    // Flush the buffer
-    FLUSH;
 
     // Perform the loop and get the Students School Name
     do {
@@ -184,29 +188,22 @@ void *push(student_t *head) {
         
         // Remove the new line and return character from the string
         tmp[strcspn(tmp, "\n")] = 0;
-        tmp[strcspn(tmp, "\r")] = 0;
         
         // Check if a school name has been entered
         if(strlen(tmp) == 0) {
             // Display error message
-            printf("\nOops... That is an invalid School Name.  Please try again.\n\n");
-            
-            // Flush the Buffer
-            FLUSH;
+            printf("\nOops... That's an invalid School Name.  Please try again.\n\n");                        
         }else{
             // Allocate the space for the students school name on the heap
             tmpStudent->schoolName = (char*)malloc((strlen(tmp) + 1) * sizeof(char));
             
             // Assign the student to it's school name
             tmpStudent->schoolName = strncpy(tmpStudent->schoolName, tmp, (strlen(tmp) + 1));
-            
-            // Flush the Buffer
-            FLUSH;
         }
+        
+        // Flush the Buffer
+        FLUSH;
     } while(strlen(tmp) == 0);
-    
-    // Flush the buffer
-    FLUSH;
             
     // Perform the loop and get the Students Program Name
     do {
@@ -218,83 +215,76 @@ void *push(student_t *head) {
         
         // Remove the new line and return character from the string
         tmp[strcspn(tmp, "\n")] = 0;
-        tmp[strcspn(tmp, "\r")] = 0;
         
         // Check if a program name has been entered
         if(strlen(tmp) == 0) {
             // Display error message
-            printf("\nOops... That is an invalid Program Name.  Please try again.\n\n");
-            
-            // Flush the Buffer
-            FLUSH;
+            printf("\nOops... That's an invalid Program Name.  Please try again.\n\n");
         }else{
             // Allocate the space for the students program name on the heap
             tmpStudent->programName = (char*)malloc((strlen(tmp) + 1) * sizeof(char));
             
             // Assign the student to it's program name
             tmpStudent->programName = strncpy(tmpStudent->programName, tmp, (strlen(tmp) + 1));
-            
-            // Flush the Buffer
-            FLUSH;
         }
+        
+        // Flush the Buffer
+        FLUSH;
     } while(strlen(tmp) == 0);
-    
-    // Flush the buffer
-    FLUSH;
     
     // Perform a loop to get the Students graduating year
     do {
         // Display the prompt for the students graduating year
         printf("Please Enter the Students Graduating Year: ");
         
+        // Get the input from stdin and store it into the tmp array
+        fgets(tmp, (255 * sizeof(char)), stdin);
+        
+        // Remove the new line character from the string
+        tmp[strcspn(tmp, "\n")] = 0;
+        
         // Check if the entered year is valid
-        if(scanf("%d", &tmpGraduatingYear) && tmpGraduatingYear < 2018) {
+        if((tmpGraduatingYear = (int)strtol(tmp, NULL, 10)) == 0 || tmpGraduatingYear < 2018) {
             // Display an error message
-            printf("\nOops... That is an invalid Graduating Year.  Please try again.\n\n");
+            printf("\nOops... That's an invalid Graduating Year.  Please try again.\n\n");
             
             // Set the tmpGraduatingYear to 0 for error and loop continuation
             tmpGraduatingYear = 0;
-            
-            // Flush the Buffer
-            FLUSH;
         }else{
             // Assign the tmpStudent it's graduating year
             tmpStudent->graduatingYear = tmpGraduatingYear;
-            
-            // Flush the Buffer
-            FLUSH;
         }
+        
+        // Flush the buffer
+        FLUSH;
     } while(tmpGraduatingYear == 0);
-    
-    // Flush the buffer
-    FLUSH;
 
     // Perform a loop to get the Students GPA
     do {
-        // Display the prompt for the students graduating year
+        // Display the prompt for the students GPA
         printf("Please Enter the Students GPA: ");
         
+        // Get the input from the user
+        fgets(tmp, (255 * sizeof(char)), stdin);
+        
+        // Remove the new line character
+        tmp[strcmp(tmp, "\n")] = '\0';
+        
         // Check if the entered GPA is valid
-        if (scanf("%f", &tmpGpa) && tmpGpa < 0) {
+        if((tmp[0] != '0' && (tmpGpa = (float)strtof(tmp, NULL)) == 0) || tmpGpa < 0) {
             // Display an error message
             printf("\nOops... That is an invalid GPA.  Please try again.\n\n");
             
             // Set the tmpGpa to 0 for error and loop continuation
-            tmpGpa = 0;
-            
-            // Flush the Buffer
-            FLUSH;
+            tmpGpa = -1;
         }else{
             // Assign the tmpStudent it's GPA
             tmpStudent->gpa = tmpGpa;
-            
-            // Flush the Buffer
-            FLUSH;
         }
-    } while(tmpGpa == 0);
     
-    // Flush the buffer
-    FLUSH;
+        // Flush the buffer
+        FLUSH;
+    } while(tmpGpa == -1);
     
     // Check if head is not NULL
     if(head != NULL) {
@@ -336,21 +326,18 @@ void *pop(student_t *head) {
         int ch;
         
         // Print the confirmation message to remove the user
-        printf("Are you sure that you want to remove the student? (y/Y): ");
+        printf("Are you sure that you want to remove the student? (y/Y - Yes): ");
         
         // Check if the user really wants to remove the student
-        if((ch = getchar()) != EOF && (ch != 'y' && ch != 'Y')) {            
+        if((ch = getchar()) != EOF && (ch != 'y' || ch != 'Y')) {            
             // Return null as the nothing has modified the stack
             return NULL;
         }else{
             // Create a new student item that holds the head item
             student_t *popped = head;
 
-            // Check if there is another item in the stack
-            if(head->next != NULL) {
-                // Move the head to the next stack item
-                head = head->next;
-            }
+            // Move the head to the next stack item
+           head = head->next;
 
             // Free the memory assignment of the popped students name
             free(popped->name);
@@ -398,6 +385,12 @@ bool isUniqueId(student_t *head, int id) {
 
             // Move to the next item in the stack
             current = current->next;
+        }
+        
+        // Check if the last student ID is the same as the passed id
+        if (current->id == id) {
+            // Return false (passed id is not unique)
+            return false;
         }
     }
     
@@ -486,6 +479,9 @@ void *printStudent(student_t *student) {
     printf("-----------------------------------------------------\n");
     printf("ID: %d\nName: %s\nGraduating Year: %d\nGPA: %.2lf\nProgram Name: %s\nSchool Name: %s\n", student->id, student->name, student->graduatingYear, student->gpa, student->programName, student->schoolName);
     printf("-----------------------------------------------------\n\n");
+    
+    // Return NULL as nothing is changing on the stack
+    return NULL;
 }
 
 /**
