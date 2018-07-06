@@ -124,6 +124,9 @@ void *push(student_t *head) {
         exit(-1);
     }
 
+    // Print prompt for entering student information
+    printf("\nPlease Fill the Following Prompts to add a Student to the Stack");
+    
     // Perform a loop to get the Students ID
     do {
         // Display a prompt message for the students id
@@ -304,8 +307,8 @@ void *push(student_t *head) {
     // Assign the head to the created student
     head = tmpStudent;
     
-    // Print new line for formatting
-    printf("\nStudent Added Successfully!\n");
+    // Print success message and new line for formatting
+    printf("\nStudent Added Successfully!\n\n");
     
     // Return the new stack head (top) pointer
     return head;
@@ -331,8 +334,14 @@ void *pop(student_t *head) {
         // Create a new student item that holds the head item
         student_t *popped = head;
 
-        // Move the head to the next stack item
-        head = head->next;
+        // Check if there is another item in the stack
+        if(head->next != NULL) {
+            // Move the head to the next stack item
+            head = head->next;
+        }else{
+            // Set the head node to NULL
+            head = NULL;
+        }
 
         // Check if the popped item name is not NULL
         if (popped->name) {
@@ -354,6 +363,9 @@ void *pop(student_t *head) {
 
         // Free the memory assignment of the popped student item
         free(popped);
+        
+        // Display Success pop message
+        printf("\nTop Student Successfully removed from Stack.\n\n");
 
         // Return the new head of the students stack
         return head;
@@ -431,19 +443,31 @@ void *printAll(student_t *head) {
     }else{
         // Create a tmp student that points to the head of the student stack used for iteration
         student_t *current = head;
-
-        // Look through the student stack while the next item is not NULL
-        while (current->next != NULL) {
+        
+        // Check if the next pointer is NULL or not
+        if(current->next == NULL) {
             // Print function starter
-            printf("\n\n---------------Printing the All Student---------------\n");
-            
+            printf("\n\n-------------- Printing all the Student -------------\n");
+
             // Call the function that prints student information in the console for the iterated student in the stack
             printStudent(current);
+        }else{
+            // Look through the student stack while the next item is not NULL
+            while (current->next != NULL) {
+                // Print function starter
+                printf("\n\n-------------- Printing all the Student -------------\n");
 
-            // Move to the next item in the stack
-            current = current->next;
+                // Call the function that prints student information in the console for the iterated student in the stack
+                printStudent(current);
+
+                // Move to the next item in the stack
+                current = current->next;
+            }
         }
     }
+    
+    // Return NULL as nothing is being changed on the stack
+    return NULL;
 }
 
 /**
