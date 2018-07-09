@@ -42,7 +42,7 @@ typedef struct node {
     int graduatingYear;
     float gpa;
     struct node *next;
-} Student, *StudentPtr;
+} student_t, Student, *StudentPtr;
 
 // Define the function prototypes
 void *push(StudentPtr); // Function used to add an item to the stack
@@ -82,20 +82,27 @@ int main() {
             // Calls the correct method from the method array
             StudentPtr result;
             
+            // Check if the user would like to pop the first student off of the list
             if(choice == 3) {
-                // Print the confirmation message to remove the user
-                printf("\nAre you sure that you want to remove the student? [ y/Y - Yes | n/N - No]: ");
+                // Check if the head is currently NULL
+                if(head == NULL) {
+                    // Display error message 
+                    printf("\nOops... Unable to remove student from the list as there are no students in the list.\n\n");
+                }else{                
+                    // Print the confirmation message to remove the user
+                    printf("\nAre you sure that you want to remove the student? [ y/Y - Yes | n/N - No]: ");
 
-                // Store the entered character into the previousEntry variable
-                int ch = getchar();
+                    // Store the entered character into the previousEntry variable
+                    int ch = getchar();
 
-                // Check to make sure that the entered confirmation character is wither y/Y
-                if(ch != EOF && (ch == 'y' || ch == 'Y')) {
-                    // Pop the student and set it to the result variable
-                    result = pop(head);
-                }else{
-                    // Print a new line for formatting
-                    printf("\n");
+                    // Check to make sure that the entered confirmation character is wither y/Y
+                    if(ch != EOF && (ch == 'y' || ch == 'Y')) {
+                        // Pop the student and set it to the result variable
+                        result = pop(head);
+                    }else{
+                        // Print a new line for formatting
+                        printf("\n");
+                    }
                 }
             }else{
                 // Set the tmp result variable to the returned value of the called function
