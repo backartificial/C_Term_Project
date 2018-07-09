@@ -42,16 +42,16 @@ typedef struct node {
     int graduatingYear;
     float gpa;
     struct node *next;
-} student_t;
+} Student, *StudentPtr;
 
 // Define the function prototypes
-void *push(student_t*); // Function used to add an item to the stack
-void *pop(student_t*); // Function used to remove an item from the stack
-char isUniqueId(student_t*, int); // Function used to check if the passed int (ID) refers to a unique ID
-void *printTop(student_t*); // Function used to print only the top item of the stack
-void *printAll(student_t*); // Function used to print the students in the stack
-void *printStudent(student_t*); // Function used to display the actual student information to the console
-void *exitStack(student_t*); // Function used to exit out of the application section
+void *push(StudentPtr); // Function used to add an item to the stack
+void *pop(StudentPtr); // Function used to remove an item from the stack
+char isUniqueId(StudentPtr, int); // Function used to check if the passed int (ID) refers to a unique ID
+void *printTop(StudentPtr); // Function used to print only the top item of the stack
+void *printAll(StudentPtr); // Function used to print the students in the stack
+void *printStudent(StudentPtr); // Function used to display the actual student information to the console
+void *exitStack(StudentPtr); // Function used to exit out of the application section
 void instructions(); // Function to display the menu options
 
 // Define Class Variables
@@ -65,8 +65,8 @@ char tmp[255] = {0};
  */
 int main() {
     // Create the needed variables
-    void *(*methods[])(student_t *) = {printTop, push, pop, printAll, exitStack}; // Store pointer to the function
-    student_t *head = NULL; // Create a NULL student structure
+    void *(*methods[])(StudentPtr) = {printTop, push, pop, printAll, exitStack}; // Store pointer to the function
+    StudentPtr head = NULL; // Create a NULL student structure
     char choice; // Int to hold the menu choice of the user
 
     // Loop through and display the menu options
@@ -80,7 +80,7 @@ int main() {
         // Check if the entered menu option is valid
         if((choice = atoi(tmp)) != 0 && (choice >= 1 && choice <= 5)) {
             // Calls the correct method from the method array
-            student_t *result;
+            StudentPtr result;
             
             if(choice == 3) {
                 // Print the confirmation message to remove the user
@@ -99,7 +99,7 @@ int main() {
                 }
             }else{
                 // Set the tmp result variable to the returned value of the called function
-                result = (student_t *)(*methods[choice - 1])(head);
+                result = (StudentPtr)(*methods[choice - 1])(head);
             }            
 
             // Check if the result of the called method is not NULL
@@ -125,10 +125,10 @@ int main() {
  * @return the new top item of the stack
  * 
  */
-void *push(student_t *head) {
+void *push(StudentPtr head) {
     // Create the needed function variables
-    student_t* tmpStudent = (student_t*)malloc(sizeof(student_t));
-    int tmpInt = 0;
+    StudentPtr tmpStudent = (StudentPtr)malloc(sizeof(Student));
+    int tmpInt = 0, tmpStringLength = 0;
     float tmpFloat = -1;
     
     // Check if memory cannot be allocate for the tmpStudent
@@ -181,24 +181,24 @@ void *push(student_t *head) {
         // Remove the new line character from the string
         tmp[strcspn(tmp, "\n")] = 0;
         
-        // Set the entered string length + 1 (null terminating character) to tmpInt
-        tmpInt = strlen(tmp) + 1;
+        // Hold the length of the string + 1 (NULL Terminating) to tmpStringLength
+        tmpStringLength = strlen(tmp) + 1;
         
         // Check if a name has been entered
-        if(tmpInt == 1) {
+        if(tmpStringLength == 1) {
             // Display error message
             printf("\nOops... That's an invalid Student Name.  Please try again.\n\n");
         }else{
             // Allocate the space for the students name on the heap
-            tmpStudent->name = (char*)malloc(tmpInt * sizeof(char));
+            tmpStudent->name = (char*)malloc(tmpStringLength * sizeof(char));
             
             // Assign the student to it's name
-            tmpStudent->name = strncpy(tmpStudent->name, tmp, tmpInt);
+            tmpStudent->name = strncpy(tmpStudent->name, tmp, tmpStringLength);
         }
         
         // Flush the Buffer
         FLUSH;
-    } while(tmpInt == 1);
+    } while(tmpStringLength == 1);
 
     // Perform the loop and get the Students School Name
     do {
@@ -211,24 +211,24 @@ void *push(student_t *head) {
         // Remove the new line and return character from the string
         tmp[strcspn(tmp, "\n")] = 0;
         
-        // Hold the length of the string + 1 (NULL terminating) to tmpInt
-        tmpInt = strlen(tmp) + 1;
+        // Hold the length of the string + 1 (NULL terminating) to tmpStringLength
+        tmpStringLength = strlen(tmp) + 1;
         
         // Check if a school name has been entered
-        if(tmpInt == 1) {
+        if(tmpStringLength == 1) {
             // Display error message
             printf("\nOops... That's an invalid School Name.  Please try again.\n\n");                        
         }else{
             // Allocate the space for the students school name on the heap
-            tmpStudent->schoolName = (char*)malloc(tmpInt * sizeof(char));
+            tmpStudent->schoolName = (char*)malloc(tmpStringLength * sizeof(char));
             
             // Assign the student to it's school name
-            tmpStudent->schoolName = strncpy(tmpStudent->schoolName, tmp, tmpInt);
+            tmpStudent->schoolName = strncpy(tmpStudent->schoolName, tmp, tmpStringLength);
         }
         
         // Flush the Buffer
         FLUSH;
-    } while(tmpInt == 1);
+    } while(tmpStringLength == 1);
             
     // Perform the loop and get the Students Program Name
     do {
@@ -241,24 +241,24 @@ void *push(student_t *head) {
         // Remove the new line and return character from the string
         tmp[strcspn(tmp, "\n")] = 0;
         
-        // Hold the length of the string + 1 (NULL terminating) to tmpInt
-        tmpInt = strlen(tmp) + 1;
+        // Hold the length of the string + 1 (NULL terminating) to tmpStringLength
+        tmpStringLength = strlen(tmp) + 1;
         
         // Check if a program name has been entered
-        if(tmpInt == 1) {
+        if(tmpStringLength == 1) {
             // Display error message
             printf("\nOops... That's an invalid Program Name.  Please try again.\n\n");
         }else{
             // Allocate the space for the students program name on the heap
-            tmpStudent->programName = (char*)malloc(tmpInt * sizeof(char));
+            tmpStudent->programName = (char*)malloc(tmpStringLength * sizeof(char));
             
             // Assign the student to it's program name
-            tmpStudent->programName = strncpy(tmpStudent->programName, tmp, tmpInt);
+            tmpStudent->programName = strncpy(tmpStudent->programName, tmp, tmpStringLength);
         }
         
         // Flush the Buffer
         FLUSH;
-    } while(tmpInt == 1);
+    } while(tmpStringLength == 1);
     
     // Perform a loop to get the Students graduating year
     do {
@@ -341,7 +341,7 @@ void *push(student_t *head) {
  * @return the new head stack item
  * 
  */
-void *pop(student_t *head) {
+void *pop(StudentPtr head) {
     // Check if the head is NULL
     if (head == NULL) {
         // Display error message 
@@ -351,17 +351,11 @@ void *pop(student_t *head) {
         return NULL;
     }else{        
         // Create a new student item that holds the head item
-        student_t *poppedStudent = head;
+        StudentPtr poppedStudent = head;
 
-        // Check if there is another item in the stack
-        if(head->next != NULL) {
-            // Move the head to the next stack item
-            head = head->next;
-        }else{
-            // Set the head node to NULL
-            head = NULL;
-        }
-
+        // Move the head to the next stack item
+        head = head->next;
+        
         // Free the memory assignment of the popped students name
         free(poppedStudent->name);
 
@@ -394,9 +388,9 @@ void *pop(student_t *head) {
  * @return [true - When the passed id is unique | false - When the passed id is not unique]
  * 
  */
-char isUniqueId(student_t *head, int id) {
-    // Create a previousEntry student that points to the head of the student stack used for iteration
-    student_t *current = head;
+char isUniqueId(StudentPtr head, int id) {
+    // Create a current student that points to the head of the student stack used for iteration
+    StudentPtr current = head;
     
     // Loop through the student stack while the current item is not NULL
     while(current != NULL) {
@@ -421,7 +415,7 @@ char isUniqueId(student_t *head, int id) {
  * @param head: is the top item in the student stack
  *
  */
-void *printTop(student_t *head) {
+void *printTop(StudentPtr head) {
     // Check if the head item of the stack is empty
     if (head == NULL) {
         // Display an empty student stack message
@@ -445,14 +439,14 @@ void *printTop(student_t *head) {
  * @param head: is the first item in the student stack
  * 
  */
-void *printAll(student_t *head) {
+void *printAll(StudentPtr head) {
     // Check if the passed in head is NULL
     if(head == NULL) {
         // Display an empty student stack message
         printf("\nLooks like the Student List is empty.  Please add items to the list to view them.\n\n");
     }else{
         // Create a tmp student that points to the head of the student stack used for iteration
-        student_t *current = head;
+        StudentPtr current = head;
         
         // Print function starter
         printf("\n\n--------------- Printing Students List --------------\n");
@@ -478,7 +472,7 @@ void *printAll(student_t *head) {
  * @param student: is the student that is to be displayed
  * 
  */
-void *printStudent(student_t *student) {
+void *printStudent(StudentPtr student) {
     // Display the separator and student information
     printf("-----------------------------------------------------\n");
     printf("ID: %d\nName: %s\nGraduating Year: %d\nGPA: %.2lf\nProgram Name: %s\nSchool Name: %s\n", student->id, student->name, student->graduatingYear, student->gpa, student->programName, student->schoolName);
@@ -495,19 +489,20 @@ void *printStudent(student_t *student) {
  * @param head: is the top item of the student stack (used to pop from the stack to account for memory leakage)
  * 
  */
-void *exitStack(student_t *head) {
+void *exitStack(StudentPtr head) {
     // Check if the head (top) of the stack is empty
     if(head != NULL) {
         // Create a tmp student that points to the head of the student stack used for iteration
-        student_t *current = head;
+        StudentPtr current = head;
 
         // Look through the student stack while the current item is not NULL
         while(current != NULL){
             // Pop the current iterated student from the stack
-            pop(current);
+           head = current = pop(current);
         }
 
-        // Free the current student from memory
+        // Free the head and current student from memory
+        free(head);
         free(current);
     }
     
