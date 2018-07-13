@@ -2,8 +2,10 @@
  * File: Data_Structures_C_ClassProject/Part_B/queue.c
  * Assignment: Final_Project
  * Creation date: July 10, 2018
- * Last Modified: July 13, 2018 
- * 
+ * Last Modified: July 13, 2018
+ *
+ * GitHub Link: https://github.com/groverb/Data_Structures_C_ClassProject
+ *
  * Group Members:
  *    - James Grau
  *    - Bhavay Grover
@@ -21,9 +23,9 @@
 #define FLUSH freopen(NULL, "r", stdin)
 
 /**
- * 
+ *
  * This structure is used for creating a structure of a student
- * 
+ *
  * @item id: is the students ID
  * @item name: is the pointer to the students Name
  * @item schoolName: is the pointer to the name of the school that the student attends
@@ -31,7 +33,7 @@
  * @item graduatingYear: is the year that the student is intended in graduating
  * @item gpa: is the students current GPA
  * @item next: is the pointer to the next item in the stack
- * 
+ *
  */
 typedef struct node {
     // Declare the needed structure items
@@ -60,9 +62,9 @@ static const size_t MAX_INPUT_LENGTH = (255 * sizeof(char));
 char tmp[255] = {0};
 
 /**
- * 
+ *
  * This method is used to run the core of the application section
- * 
+ *
  */
 int main() {
     // Create the needed variables
@@ -87,13 +89,13 @@ int main() {
                     // Call the method to print the first student
                     printTop(head);
                 break;
-                
+
                 // Case to add a student to the queue
                 case (2):
                     // Call the method to add a student to the queue
                     enqueue(&head, &tail);
                 break;
-                
+
                 // Case to remove a student from the queue
                 case (3):
                     // Print the confirmation message to remove the user
@@ -111,13 +113,13 @@ int main() {
                         printf("\n");
                     }
                 break;
-                
+
                 // Case to print all students in the queue
                 case (4):
                     // Call the Print All method to print all students in the queue
                     printAll(head);
                 break;
-                
+
                 // Case for exiting the application section
                 case (5):
                     // Call the method to exit this part of the application
@@ -135,9 +137,9 @@ int main() {
 }
 
 /**
- * 
+ *
  * This function is used to display the menu of the stack application
- * 
+ *
  */
 void instructions() {
     // Display the menu options
@@ -153,12 +155,12 @@ void instructions() {
 }
 
 /**
- * 
+ *
  * This function is used to add a student to the queue
- * 
+ *
  * @param head: is the start of the queue
  * @param tail: is the end of the queue
- * 
+ *
  */
 void enqueue(StudentPtr *head, StudentPtr *tail) {
     // Create the needed function variables
@@ -192,7 +194,7 @@ void enqueue(StudentPtr *head, StudentPtr *tail) {
         // Get the input from stdin and store it into the previousEntry array
         fgets(tmp, MAX_INPUT_LENGTH, stdin);
 
-        // Store the entered id into the validation.int union 
+        // Store the entered id into the validation.int union
         tmpValidation.enteredInt = atoi(tmp);
 
         // Check if the entered ID is valid
@@ -240,7 +242,7 @@ void enqueue(StudentPtr *head, StudentPtr *tail) {
 
                 // Free the current tmp student
                 free(tmpStudent);
-                
+
                 // Exit the application in error
                 exitQueue(head, tail);
             }
@@ -283,7 +285,7 @@ void enqueue(StudentPtr *head, StudentPtr *tail) {
                 // Free the current tmp student
                 free(tmpStudent->name);
                 free(tmpStudent);
-                
+
                 // Exit the application in error
                 exitQueue(head, tail);
             }
@@ -327,7 +329,7 @@ void enqueue(StudentPtr *head, StudentPtr *tail) {
                 free(tmpStudent->name);
                 free(tmpStudent->schoolName);
                 free(tmpStudent);
-                
+
                 // Exit the application in error
                 exitQueue(head, tail);
             }
@@ -393,7 +395,7 @@ void enqueue(StudentPtr *head, StudentPtr *tail) {
         // Flush the buffer
         FLUSH;
     } while(tmpValidation.enteredFloat == -1);
-    
+
     // Set the student to point to NULL
     tmpStudent->next = NULL;
 
@@ -405,44 +407,44 @@ void enqueue(StudentPtr *head, StudentPtr *tail) {
     }else{
         // Set the tail next pointer to the point to the new student
         (*tail)->next = tmpStudent;
-        
+
         // Set the tail to the new student
         *tail = tmpStudent;
     }
 
     // Print success message and new line for formatting
     printf("\n\tStudent Added Successfully!\n\n");
-    
+
     // Return back to the main menu
     return;
 }
 
 /**
- * 
+ *
  * This function is used to remove a student from the queue
- * 
+ *
  * @param head: is the first student in the queue
  * @param tail: is the last student in the queue
- * 
+ *
  */
 void dequeue(StudentPtr *head, StudentPtr *tail) {
     // Check if the queue is empty
     if (isEmpty(*head)) {
-        // Display error message 
+        // Display error message
         printf("\nOops...  Unable to remove student from the list as there are no students in the list.\n\n");
-    }else{        
+    }else{
         // Create a new student item that holds the head item
         StudentPtr poppedStudent = (*head);
 
         // Move the head to the next stack item
         *head = (*head)->next;
-        
+
         // Check to see if the queue is NULL after changing it to the next item in the queue
         if(isEmpty(*head)) {
             // Set tail to NULL
             *tail = NULL;
         }
-        
+
         // Free the memory assignment of the popped students name
         free(poppedStudent->name);
 
@@ -464,11 +466,11 @@ void dequeue(StudentPtr *head, StudentPtr *tail) {
 }
 
 /**
- * 
+ *
  * This function is used to print only the first student in the queue
- * 
+ *
  * @param head: is the first student in the queue
- * 
+ *
  */
 void printTop(StudentPtr head) {
     // Check if the queue is empty
@@ -482,11 +484,11 @@ void printTop(StudentPtr head) {
 }
 
 /**
- * 
+ *
  * This function is used to iterate through the queue and print the students information
- * 
+ *
  * @param head: is the first student in the queue
- * 
+ *
  */
 void printAll(StudentPtr head) {
     // Check if the queue is empty
@@ -496,10 +498,10 @@ void printAll(StudentPtr head) {
     }else{
         // Create a tmp student that points to the head of the student queue used for iteration
         StudentPtr current = head;
-        
+
         // Print function starter
         printf("\n\n--------------- Printing Students List --------------\n");
-        
+
         // Look through the student queue while the current item is not NULL
         while(current != NULL) {
             // Call the function that prints student information in the console for the iterated student in the queue
@@ -512,11 +514,11 @@ void printAll(StudentPtr head) {
 }
 
 /**
- * 
+ *
  * This function is used to print the students information to the console
- * 
+ *
  * @param student: is the student to be printed
- * 
+ *
  */
 void printStudent(StudentPtr student) {
     // Display the separator and student information
@@ -526,12 +528,12 @@ void printStudent(StudentPtr student) {
 }
 
 /**
- * 
+ *
  * This function is used to check and see if the queue of students is empty
- * 
+ *
  * @param head: is the head of the student queue
  * @return true/false - depending on if the head student pointer is NULL or not
- * 
+ *
  */
 char isEmpty(StudentPtr head) {
     // Return the head or NULL is the queue is empty
@@ -568,12 +570,12 @@ char isUniqueId(StudentPtr head, int id) {
 }
 
 /**
- * 
+ *
  * This function is used to exit the application section
- * 
+ *
  * @param head: is the head of the queue
  * @param tail: is the tail of the queue
- * 
+ *
  */
 void exitQueue(StudentPtr *head, StudentPtr *tail) {
     // Check to make sure that the queue is not empty
@@ -590,7 +592,7 @@ void exitQueue(StudentPtr *head, StudentPtr *tail) {
 
     // Print the exiting message
     printf("\nClosing Application Section.\n\n");
-    
+
     // Exit the application without error
     exit(0);
 }
