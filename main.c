@@ -1,8 +1,8 @@
 /**
- * File: Stack_ClassProject_Part_A/structure.c
+ * File: Stack_ClassProject/queue.c
  * Assignment: Final_Project
- * Creation date: July 3, 2018
- * Last Modified: July 9, 2018 
+ * Creation date: July 10, 2018
+ * Last Modified: July 13, 2018 
  * 
  * Group Members:
  *    - James Grau
@@ -35,24 +35,26 @@
  */
 typedef struct node {
     // Declare the needed structure items
-    int id;
+    unsigned int id;
     char *name;
     char *schoolName;
     char *programName;
     int graduatingYear;
     float gpa;
-    struct node *next;
+    struct node *nextPtr;
 } student_t, Student, *StudentPtr;
 
+
 // Define the function prototypes
-void *push(StudentPtr); // Function used to add an item to the stack
-void *pop(StudentPtr); // Function used to remove an item from the stack
-char isUniqueId(StudentPtr, int); // Function used to check if the passed int (ID) refers to a unique ID
-void *printTop(StudentPtr); // Function used to print only the top item of the stack
-void *printAll(StudentPtr); // Function used to print the students in the stack
-void *printStudent(StudentPtr); // Function used to display the actual student information to the console
-void *exitStack(StudentPtr); // Function used to exit out of the application section
-void instructions(); // Function to display the menu options
+void dequeue(StudentPtr, StudentPtr);
+void enqueue(StudentPtr, StudentPtr);
+void instructions();
+void exitQueue(StudentPtr, StudentPtr);
+void printTop(StudentPtr);
+void printAll(StudentPtr);
+void printStudent(StudentPtr);
+char isEmpty(StudentPtr);
+char isUniqueId(StudentPtr, int);
 
 // Define Class Variables
 static const size_t MAX_INPUT_LENGTH = (255 * sizeof(char));
@@ -65,459 +67,404 @@ char tmp[255] = {0};
  */
 int main() {
     // Create the needed variables
-    void *(*methods[])(StudentPtr) = {printTop, push, pop, printAll, exitStack}; // Store pointer to the function
-    StudentPtr head = NULL; // Create a NULL student structure
-    char choice; // Int to hold the menu choice of the user
+    StudentPtr head = NULL; // Create a NULL student head structure
+    StudentPtr tail = NULL; // Create a NULL student tail structure
+    char choice; // Integer (int) to hold the menu choice of the user
 
     // Loop through and display the menu options
     while(1) {
         // Call the method used to display the menu options
         instructions();
-        
-        // Get the input from stdin and store it into the tmp variable
+
+        // Get the input from stdin and store it into the previousEntry variable
         fgets(tmp, MAX_INPUT_LENGTH, stdin);
 
         // Check if the entered menu option is valid
         if((choice = atoi(tmp)) != 0 && (choice >= 1 && choice <= 5)) {
-            // Calls the correct method from the method array
-            StudentPtr result;
-            
-            // Check if the user would like to pop the first student off of the list
-            if(choice == 3) {
-                // Check if the head is currently NULL
-                if(head == NULL) {
-                    // Display error message 
-                    printf("\nOops... Unable to remove student from the list as there are no students in the list.\n\n");
-                }else{                
+            // Select the correct case based on the entered choice
+            switch (choice) {
+                // Case to print the first student
+                case (1):
+                    // Call the method to print the first student
+                    printTop(head);
+                break;
+                
+                // Case to add a student to the queue
+                case (2):
+                    // Call the method to add a student to the queue
+                    enqueue(&head, &tail);
+                break;
+                
+                // Case to remove a student from the queue
+                case (3):
                     // Print the confirmation message to remove the user
                     printf("\nAre you sure that you want to remove the student? [ y/Y - Yes | n/N - No]: ");
 
                     // Store the entered character into the previousEntry variable
                     int ch = getchar();
 
-                    // Check to make sure that the entered confirmation character is wither y/Y
+                    // Check to make sure that the entered confirmation character is either y/Y
                     if(ch != EOF && (ch == 'y' || ch == 'Y')) {
-                        // Pop the student and set it to the result variable
-                        result = pop(head);
+                        // Remove the student from the queue
+                        dequeue(&head, &tail);
                     }else{
                         // Print a new line for formatting
                         printf("\n");
                     }
-                }
-            }else{
-                // Set the tmp result variable to the returned value of the called function
-                result = (StudentPtr)(*methods[choice - 1])(head);
-            }            
-
-            // Check if the result of the called method is not NULL
-            if(result) {
-                // Set the head value to the result from the function
-                head = result;
+                break;
+                
+                // Case to print all students in the queue
+                case (4):
+                    // Call the Print 
+                    printAll(head);
+                    break;
+                case (5):
+                    exitQueue(&head, &tail);
+                    // exit(-1); //temp
+                    break;
             }
-        }else{
+
+        } else {
             // Display an invalid menu option error message
             printf("\nOops... That's an invalid menu option.  Please try again.\n\n");
         }
-        
+
         // Flush the buffer
         FLUSH;
     }
 }
 
-/**
- * 
- * This function is used to add an item to the stack
- * 
- * @param head: is the top item of the stack
- * @return the new top item of the stack
- * 
- */
-void *push(StudentPtr head) {
-    // Create the needed function variables
-    StudentPtr tmpStudent = (StudentPtr)malloc(sizeof(Student));
-    int tmpInt = 0, tmpStringLength = 0;
-    float tmpFloat = -1;
-    
+char isEmpty(StudentPtr headPtr) {
+
+    return headPtr == NULL;
+}
+
+void printAll(StudentPtr headPtr) {
+
+    // if queue is empty
+    if (headPtr == NULL) {
+
+        puts("\n Queue is empty.\n");
+    } // end if
+    else {
+
+        StudentPtr current = headPtr;
+
+        puts("The queue is:");
+
+        // while not end of queue
+        while (current != NULL) {
+
+            printStudent(current);
+            current = current->nextPtr;
+        } // end while
+        printf("\n");
+
+    } // end else
+}
+
+void enqueue(StudentPtr *headPtr, StudentPtr *tailPtr) {
+// Create the needed function variables
+    StudentPtr newStudent = (StudentPtr) malloc(sizeof(Student));
+
     // Check if memory cannot be allocate for the tmpStudent
-    if(tmpStudent == NULL) {
+    if (newStudent == NULL) {
+
         // Display an error message
-        printf("Oops... Memory cannot be allocated for adding a new student.  The application is closing as it cannot go any further.");
-        
+        printf("Oops.. Memory cannot be allocated for adding a new student.  The application is closing as it cannot go any further.");
+
         // Exit the application in error
         exit(-1);
     }
 
+    newStudent->nextPtr = NULL;
+
+    // Stores the values to be validated
+    static union {
+
+        // Declare the needed member for the union
+        size_t previousSize; // Stores the length of the previous string
+        int previousInt; // Stores the value of the previous received integer
+        float previousFloat; // Stores the value of the previous received floating point number
+    } previousValidation;
+
     // Print prompt for entering student information
-    printf("\nPlease Fill the Following Prompts to add a Student to the List\n");
-    
+    printf("\nPlease Fill the Following Prompts to add a Student to the List:\n");
+
     // Perform a loop to get the Students ID
     do {
+
         // Display a prompt message for the students id
-        printf("Please Enter the Students ID (Number): ");
-        
-        // Get the input from stdin and store it into the tmp array
+        printf("\n\tPlease Enter the Students ID (Number): ");
+
+        // Get the input from stdin and store it into the previousEntry array
         fgets(tmp, MAX_INPUT_LENGTH, stdin);
-        
-        // Remove the new line character from the string
-        tmp[strcspn(tmp, "\n")] = 0;        
-        
+
+        previousValidation.previousInt = atof(tmp);
+
         // Check if the entered ID is valid
-        if((tmpInt = atoi(tmp)) == 0 || tmpInt < 1 || !isUniqueId(head, tmpInt)) {
+        if (previousValidation.previousInt == 0 && *tmp != '0' || previousValidation.previousInt < 0 ||
+            !isUniqueId(*headPtr, previousValidation.previousInt)) {
+
             // Display an error message
-            printf("\nOops... That's an invalid Student Id.  Please try again.\n\n");
-            
+            printf("\n\tOops... That is an invalid Student Id.  Please try again.\n\n");
+
             // Set the tmpId to 0 for error and loop continuation
-            tmpInt = 0;
-        }else{
+            previousValidation.previousInt = -1;
+        } else {
+
             // Assign the tmpStudent it's id
-            tmpStudent->id = tmpInt;
+            newStudent->id = previousValidation.previousInt;
         }
-        
+
         // Flush the buffer
         FLUSH;
-    } while(tmpInt == 0);    
+    } while (previousValidation.previousInt == -1);
 
     // Perform a loop to get the Students Name
     do {
+
         // Display prompt message getting the students name
-        printf("Please Enter the Students Name: ");
-        
+        printf("\tPlease Enter the Students Name: ");
+
         // Get the input of the students name
         fgets(tmp, MAX_INPUT_LENGTH, stdin);
-        
+
         // Remove the new line character from the string
         tmp[strcspn(tmp, "\n")] = 0;
-        
-        // Hold the length of the string + 1 (NULL Terminating) to tmpStringLength
-        tmpStringLength = strlen(tmp) + 1;
-        
+
+        // The the String length + 1 for the entered student name
+        previousValidation.previousSize = strlen(tmp) + 1;
+
         // Check if a name has been entered
-        if(tmpStringLength == 1) {
+        if (previousValidation.previousSize == 1) {
+
             // Display error message
-            printf("\nOops... That's an invalid Student Name.  Please try again.\n\n");
-        }else{
+            printf("\n\tOops... That's an invalid Student Name.  Please try again.\n\n");
+        } else {
+
             // Allocate the space for the students name on the heap
-            tmpStudent->name = (char*)malloc(tmpStringLength * sizeof(char));
-            
+            newStudent->name = (char *) malloc(previousValidation.previousSize * sizeof(char));
+
+            // Check if memory cannot be allocate for the tmpStudent's name
+            if (newStudent->name == NULL) {
+
+                // Display an error message
+                printf("Oops.. Memory cannot be allocated for adding a new student.  The application is closing as it cannot go any further.");
+
+                // Exit the application in error
+                exit(-1);
+            }
+
             // Assign the student to it's name
-            tmpStudent->name = strncpy(tmpStudent->name, tmp, tmpStringLength);
+            memcpy(newStudent->name, tmp, previousValidation.previousSize);
         }
-        
+
         // Flush the Buffer
         FLUSH;
-    } while(tmpStringLength == 1);
+    } while (previousValidation.previousSize == 1);
 
     // Perform the loop and get the Students School Name
     do {
+
         // Display prompt message getting the students school name
-        printf("Please Enter the Students School Name: ");
-        
+        printf("\tPlease Enter the Students School Name: ");
+
         // Get the input of the students school name
         fgets(tmp, MAX_INPUT_LENGTH, stdin);
-        
+
         // Remove the new line and return character from the string
         tmp[strcspn(tmp, "\n")] = 0;
-        
-        // Hold the length of the string + 1 (NULL terminating) to tmpStringLength
-        tmpStringLength = strlen(tmp) + 1;
-        
+
+        // The the String length + 1 for the entered school name
+        previousValidation.previousSize = strlen(tmp) + 1;
+
         // Check if a school name has been entered
-        if(tmpStringLength == 1) {
+        if (previousValidation.previousSize == 1) {
+
             // Display error message
-            printf("\nOops... That's an invalid School Name.  Please try again.\n\n");                        
-        }else{
+            printf("\n\tOops... That's an invalid School Name.  Please try again.\n\n");
+        } else {
+
             // Allocate the space for the students school name on the heap
-            tmpStudent->schoolName = (char*)malloc(tmpStringLength * sizeof(char));
-            
+            newStudent->schoolName = (char *) malloc(previousValidation.previousSize * sizeof(char));
+
+            // Check if memory cannot be allocate for the tmpStudent's school name
+            if (newStudent->schoolName == NULL) {
+
+                // Display an error message
+                printf("Oops.. Memory cannot be allocated for adding a new student.  The application is closing as it cannot go any further.");
+
+                // Exit the application in error
+                exit(-1);
+            }
+
             // Assign the student to it's school name
-            tmpStudent->schoolName = strncpy(tmpStudent->schoolName, tmp, tmpStringLength);
+            memcpy(newStudent->schoolName, tmp, previousValidation.previousSize);
         }
-        
+
         // Flush the Buffer
         FLUSH;
-    } while(tmpStringLength == 1);
-            
+    } while (previousValidation.previousSize == 1);
+
     // Perform the loop and get the Students Program Name
     do {
+
         // Display prompt message getting the students program name
-        printf("Please Enter the Students Program Name: ");
-        
+        printf("\tPlease Enter the Students Program Name: ");
+
         // Get the input of the students program name
         fgets(tmp, MAX_INPUT_LENGTH, stdin);
-        
+
         // Remove the new line and return character from the string
         tmp[strcspn(tmp, "\n")] = 0;
-        
-        // Hold the length of the string + 1 (NULL terminating) to tmpStringLength
-        tmpStringLength = strlen(tmp) + 1;
-        
+
+        // Store the length of the string + 1 for the program name
+        previousValidation.previousSize = strlen(tmp) + 1;
+
         // Check if a program name has been entered
-        if(tmpStringLength == 1) {
+        if (previousValidation.previousSize == 1) {
+
             // Display error message
-            printf("\nOops... That's an invalid Program Name.  Please try again.\n\n");
-        }else{
+            printf("\n\tOops... That's an invalid Program Name.  Please try again.\n\n");
+        } else {
+
             // Allocate the space for the students program name on the heap
-            tmpStudent->programName = (char*)malloc(tmpStringLength * sizeof(char));
-            
+            newStudent->programName = (char *) malloc(previousValidation.previousSize * sizeof(char));
+
+            // Check if memory cannot be allocate for the tmpStudent's program name
+            if (newStudent->programName == NULL) {
+
+                // Display an error message
+                printf("Oops.. Memory cannot be allocated for adding a new student.  The application is closing as it cannot go any further.");
+
+                // Exit the application in error
+                exit(-1);
+            }
+
             // Assign the student to it's program name
-            tmpStudent->programName = strncpy(tmpStudent->programName, tmp, tmpStringLength);
+            memcpy(newStudent->programName, tmp, previousValidation.previousSize);
         }
-        
+
         // Flush the Buffer
         FLUSH;
-    } while(tmpStringLength == 1);
-    
+    } while (previousValidation.previousSize == 1);
+
     // Perform a loop to get the Students graduating year
     do {
+
         // Display the prompt for the students graduating year
-        printf("Please Enter the Students Graduating Year: ");
-        
-        // Get the input from stdin and store it into the tmp array
+        printf("\tPlease Enter the Students Graduating Year: ");
+
+        // Get the input from stdin and store it into the previousEntry array
         fgets(tmp, MAX_INPUT_LENGTH, stdin);
-        
-        // Remove the new line character from the string
-        tmp[strcspn(tmp, "\n")] = 0;
-        
+
+        previousValidation.previousInt = atoi(tmp);
+
         // Check if the entered year is valid
-        if((tmpInt = atoi(tmp)) == 0 || tmpInt < 2018) {
+        if (previousValidation.previousInt == 0 || previousValidation.previousInt < 2018) {
+
             // Display an error message
-            printf("\nOops... That's an invalid Graduating Year.  Please try again.\n\n");
-            
+            printf("\n\tOops... That's an invalid Graduating Year.  Please try again.\n\n");
+
             // Set the tmpGraduatingYear to 0 for error and loop continuation
-            tmpInt = 0;
-        }else{
+            previousValidation.previousInt = 0;
+        } else {
+
             // Assign the tmpStudent it's graduating year
-            tmpStudent->graduatingYear = tmpInt;
+            newStudent->graduatingYear = previousValidation.previousInt;
         }
-        
+
         // Flush the buffer
         FLUSH;
-    } while(tmpInt == 0);
+    } while (previousValidation.previousInt == 0);
 
     // Perform a loop to get the Students GPA
     do {
+
         // Display the prompt for the students GPA
-        printf("Please Enter the Students GPA: ");
-        
+        printf("\tPlease Enter the Students GPA: ");
+
         // Get the input from the user
         fgets(tmp, MAX_INPUT_LENGTH, stdin);
-        
-        // Remove the new line character
-        tmp[strcmp(tmp, "\n")] = '\0';
-        
+
+        previousValidation.previousFloat = atof(tmp);
+
         // Check if the entered GPA is valid
-        if((((tmpFloat = atof(tmp)) == 0) && tmp[0] != '0') || tmpFloat < 0) {
+        if (previousValidation.previousFloat == 0 && *tmp != '0' || previousValidation.previousFloat < 0) {
+
             // Display an error message
-            printf("\nOops... That's an invalid GPA.  Please try again.\n\n");
-            
+            printf("\n\tOops... That's an invalid GPA.  Please try again.\n\n");
+
             // Set the tmpGpa to 0 for error and loop continuation
-            tmpFloat = -1;
-        }else{
+            previousValidation.previousFloat = -1;
+        } else {
+
             // Assign the tmpStudent it's GPA
-            tmpStudent->gpa = tmpFloat;
+            newStudent->gpa = previousValidation.previousFloat;
         }
-    
+
         // Flush the buffer
         FLUSH;
-    } while(tmpFloat == -1);
-    
-    // Check if head is not NULL
-    if(head != NULL) {
-        // Assign the next item in the stack to the current stack item
-        tmpStudent->next = head;
-    }else{
-        // Assign the next item in the stack to the current stack item
-        tmpStudent->next = NULL;
+    } while (previousValidation.previousFloat == -1);
+
+    // Puts the newly created student at the top of the list while pushing everything down
+    if (isEmpty(*headPtr)) {
+
+        *headPtr = newStudent;
+        *tailPtr = newStudent;
+    } else {
+
+        (*tailPtr)->nextPtr = newStudent;
+        *tailPtr = newStudent;
     }
-    
-    // Assign the head to the created student
-    head = tmpStudent;
-    
+
     // Print success message and new line for formatting
-    printf("\nStudent Added Successfully!\n\n");
-    
-    // Return the new stack head (top) pointer
-    return head;
+    printf("\n\tStudent Added Successfully!\n\n");
 }
 
-/**
- * 
- * This function is used to remove the top item from the stack
- * 
- * @param head: is the first (top) student in the stack
- * @return the new head stack item
- * 
- */
-void *pop(StudentPtr head) {
-    // Check if the head is NULL
-    if (head == NULL) {
-        // Display error message 
-        printf("\nOops... Unable to remove student from the list as there are no students in the list.\n\n");
-        
-        // Return NULL as nothing has changed on the stack
-        return NULL;
-    }else{        
-        // Create a new student item that holds the head item
-        StudentPtr poppedStudent = head;
 
-        // Move the head to the next stack item
-        head = head->next;
-        
-        // Free the memory assignment of the popped students name
-        free(poppedStudent->name);
+// remove node from queue head
+void dequeue(StudentPtr *headPtr, StudentPtr *tailPtr) {
 
-        // Free the memory assignment of the popped students school name
-        free(poppedStudent->schoolName);
+    if (isEmpty(*headPtr)) {
 
-        // Free the memory assignment of the popped students program name
-        free(poppedStudent->programName);
-
-        // Free the memory assignment of the popped student item
-        free(poppedStudent);
-
-        // Display Success pop message
-        printf("\nStudent Successfully removed from the List.\n\n");
-
-        // Flush the Buffer
-        FLUSH;
-
-        // Return the new head of the students stack
-        return head;
+        printf("Cannot deque because no student has been added");
+        return;
     }
-}
 
-/**
- * 
- * This function is used to iterate through the stack and check if the passed id is unique
- * 
- * @param head: is the first item in the stack
- * @param id: is the ID to check if unique among the stack
- * @return [true - When the passed id is unique | false - When the passed id is not unique]
- * 
- */
-char isUniqueId(StudentPtr head, int id) {
-    // Create a current student that points to the head of the student stack used for iteration
-    StudentPtr current = head;
-    
-    // Loop through the student stack while the current item is not NULL
-    while(current != NULL) {
-        // Check if the iterated student ID is the same as the passed id
-        if (current->id == id) {
-            // Return false (passed id is not unique)
-            return 0;
-        }
+    StudentPtr lostNode = (*headPtr);
 
-        // Move to the next item in the stack
-        current = current->next;
+    *headPtr = (*headPtr)->nextPtr;
+
+    if (isEmpty(*headPtr)) { // if queue is empty at this point
+        // then set tail-pointer to NULL
+        *tailPtr = NULL;
     }
-    
-    // Return true (passed id is unique)
-    return 1;
+
+    //deallocate memory of dequeued node
+    free(lostNode->name);
+    free(lostNode->schoolName);
+    free(lostNode->programName);
+    free(lostNode);
+
 }
 
-/**
- * 
- * This function is used to print the top student in the stack
- * 
- * @param head: is the top item in the student stack
- *
- */
-void *printTop(StudentPtr head) {
-    // Check if the head item of the stack is empty
-    if (head == NULL) {
-        // Display an empty student stack message
-        printf("\nLooks like the Student List is empty.  Please add an item to the list to view to the first student.\n\n");
+void printTop(StudentPtr student) {
+    if(student == NULL) {
+        printf("\nQueue is empty. ");
+        printf("\n");
     }else{
-        // Print function starter
-        printf("\n\n------------ Printing the First Student -------------\n");
-        
-        // Call the function that prints student information in the console for the first (top) student in the stack
-        printStudent(head);
+        printStudent(student);
     }
-    
-    // Return NULL as nothing is being changed on the stack
-    return NULL;
 }
 
-/**
- * 
- * This function is used to iterate through the students stack and print their information
- * 
- * @param head: is the first item in the student stack
- * 
- */
-void *printAll(StudentPtr head) {
-    // Check if the passed in head is NULL
-    if(head == NULL) {
-        // Display an empty student stack message
-        printf("\nLooks like the Student List is empty.  Please add items to the list to view them.\n\n");
-    }else{
-        // Create a tmp student that points to the head of the student stack used for iteration
-        StudentPtr current = head;
-        
-        // Print function starter
-        printf("\n\n--------------- Printing Students List --------------\n");
-        
-        // Look through the student stack while the current item is not NULL
-        while(current != NULL) {
-            // Call the function that prints student information in the console for the iterated student in the stack
-            printStudent(current);
-
-            // Move to the next item in the stack
-            current = current->next;
-        }
-    }
-    
-    // Return NULL as nothing is being changed on the stack
-    return NULL;
-}
-
-/**
- * 
- * This function is used to display the students information in the console
- * 
- * @param student: is the student that is to be displayed
- * 
- */
-void *printStudent(StudentPtr student) {
+void printStudent(StudentPtr student) {
     // Display the separator and student information
     printf("-----------------------------------------------------\n");
-    printf("ID: %d\nName: %s\nGraduating Year: %d\nGPA: %.2lf\nProgram Name: %s\nSchool Name: %s\n", student->id, student->name, student->graduatingYear, student->gpa, student->programName, student->schoolName);
+    printf("ID: %d\nName: %s\nGraduating Year: %d\nGPA: %.2lf\nProgram Name: %s\nSchool Name: %s\n", student->id,
+           student->name, student->graduatingYear, student->gpa, student->programName, student->schoolName);
     printf("-----------------------------------------------------\n\n");
-    
-    // Return NULL as nothing is changing on the stack
-    return NULL;
-}
-
-/**
- * 
- * This function is used to close the application section while preventing a memory leak
- * 
- * @param head: is the top item of the student stack (used to pop from the stack to account for memory leakage)
- * 
- */
-void *exitStack(StudentPtr head) {
-    // Check if the head (top) of the stack is empty
-    if(head != NULL) {
-        // Create a tmp student that points to the head of the student stack used for iteration
-        StudentPtr current = head;
-
-        // Look through the student stack while the current item is not NULL
-        while(current != NULL){
-            // Pop the current iterated student from the stack
-           head = current = pop(current);
-        }
-
-        // Free the head and current student from memory
-        free(head);
-        free(current);
-    }
-    
-    // Print the exiting message
-    printf("\nClosing Application Section.\n\n");
-    
-    // Exit the application without error
-    exit(0);
 }
 
 /**
@@ -527,5 +474,62 @@ void *exitStack(StudentPtr head) {
  */
 void instructions() {
     // Display the menu options
-    printf("Student List Management\n------------------------------------------------\n1. Print First Student\n2. Add Student\n3. Remove First Student\n4. Print Student List\n5. Close Section\n------------------------------------------------\nPlease Enter Menu Option: ");
+    printf("Student List Management"
+           "\n------------------------------------------------"
+           "\n1. Print First Student"
+           "\n2. Add Student"
+           "\n3. Remove First Student"
+           "\n4. Print Student List"
+           "\n5. Close Section"
+           "\n------------------------------------------------"
+           "\nPlease Enter Menu Option: ");
+}
+
+
+void exitQueue(StudentPtr *head, StudentPtr *tail) {
+
+    StudentPtr current = *head;
+
+    while (current != NULL) {
+
+        dequeue(&current, tail);
+    }
+
+    printf("\nexited..\n");
+
+    exit(0);
+
+}
+
+
+/**
+ *
+ * This function is used to iterate through the stack and check if the passed id is unique
+ *
+ * @param head: is the first item in the stack
+ * @param id: is the ID to check if unique among the stack
+ * @return [true - When the passed id is unique | false - When the passed id is not unique]
+ *
+ */
+char isUniqueId(StudentPtr head, int id) {
+
+    // Create a previousEntry student that points to the head of the student stack used for iteration
+    StudentPtr current = head;
+
+    // Look through the student stack while the next item is not NULL
+    while (current != NULL) {
+
+        // Removed redundant NULL check Check if the iterated student ID is the same as the passed id
+        if (current->id == id) {
+
+            // Return false (passed id is not unique)
+            return 0;
+        }
+
+        // Move to the next item in the stack
+        current = current->nextPtr;
+    }
+
+    // Return true (passed id is unique)
+    return 1;
 }
