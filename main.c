@@ -41,7 +41,7 @@ typedef struct node {
     char *programName;
     int graduatingYear;
     float gpa;
-    struct node *nextPtr;
+    struct node *next;
 } student_t, Student, *StudentPtr;
 
 
@@ -115,18 +115,19 @@ int main() {
                 
                 // Case to print all students in the queue
                 case (4):
-                    // Call the Print 
+                    // Call the Print All method to print all students in the queue
                     printAll(head);
-                    break;
+                break;
+                
+                // Case for exiting the application section
                 case (5):
+                    // Call the method to exit this part of the application
                     exitQueue(&head, &tail);
-                    // exit(-1); //temp
-                    break;
+                break;
             }
-
-        } else {
+        }else{
             // Display an invalid menu option error message
-            printf("\nOops... That's an invalid menu option.  Please try again.\n\n");
+            printf("\nOops...  That's an invalid menu option.  Please try again.\n\n");
         }
 
         // Flush the buffer
@@ -134,50 +135,71 @@ int main() {
     }
 }
 
-char isEmpty(StudentPtr headPtr) {
-
-    return headPtr == NULL;
+/**
+ * 
+ * This function is used to check and see if the queue of students is empty
+ * 
+ * @param head: is the head of the student queue
+ * @return true/false - depending on if the head student pointer is NULL or not
+ * 
+ */
+char isEmpty(StudentPtr head) {
+    // Return the Boolean value if the queue is empty
+    return head == NULL;
 }
 
-void printAll(StudentPtr headPtr) {
-
-    // if queue is empty
-    if (headPtr == NULL) {
-
-        puts("\n Queue is empty.\n");
-    } // end if
-    else {
-
-        StudentPtr current = headPtr;
-
-        puts("The queue is:");
-
-        // while not end of queue
+/**
+ * 
+ * This function is used to iterate through the queue and print the students information
+ * 
+ * @param head: is the first student in the queue
+ * 
+ */
+void printAll(StudentPtr head) {
+    // Check if the queue is empty
+    if(head == NULL) {
+        // Display an empty student queue message
+        printf("\nLooks like the Student Queue is empty.  Please add items to the queue to view them.\n\n");
+    }else{
+        // Create a tmp student that points to the head of the student queue used for iteration
+        StudentPtr current = head;
+        
+        // Print function starter
+        printf("\n\n--------------- Printing Students List --------------\n");
+        
+        // Look through the student queue while the current item is not NULL
         while (current != NULL) {
-
+            // Call the function that prints student information in the console for the iterated student in the queue
             printStudent(current);
-            current = current->nextPtr;
-        } // end while
-        printf("\n");
 
-    } // end else
+            // Move to the next item in the queue
+            current = current->next;
+        } // end while
+    }
 }
 
-void enqueue(StudentPtr *headPtr, StudentPtr *tailPtr) {
-// Create the needed function variables
-    StudentPtr newStudent = (StudentPtr) malloc(sizeof(Student));
+/**
+ * 
+ * This function is used to add a student to the queue
+ * 
+ * @param head: is the start of the queue
+ * @param tail: is the end of the queue
+ * 
+ */
+void enqueue(StudentPtr *head, StudentPtr *tail) {
+    // Create the needed function variables
+    StudentPtr tmpStudent = (StudentPtr)malloc(sizeof(Student));
 
     // Check if memory cannot be allocate for the tmpStudent
-    if (newStudent == NULL) {
-
+    if (tmpStudent == NULL) {
         // Display an error message
-        printf("Oops.. Memory cannot be allocated for adding a new student.  The application is closing as it cannot go any further.");
+        printf("Oops...  Memory cannot be allocated for adding a new student.  The application is closing as it cannot go any further.");
 
         // Exit the application in error
         exit(-1);
     }
 
-    newStudent->nextPtr = NULL;
+    tmpStudent->next = NULL;
 
     // Stores the values to be validated
     static union {
@@ -204,7 +226,7 @@ void enqueue(StudentPtr *headPtr, StudentPtr *tailPtr) {
 
         // Check if the entered ID is valid
         if (previousValidation.previousInt == 0 && *tmp != '0' || previousValidation.previousInt < 0 ||
-            !isUniqueId(*headPtr, previousValidation.previousInt)) {
+            !isUniqueId(*head, previousValidation.previousInt)) {
 
             // Display an error message
             printf("\n\tOops... That is an invalid Student Id.  Please try again.\n\n");
@@ -214,7 +236,7 @@ void enqueue(StudentPtr *headPtr, StudentPtr *tailPtr) {
         } else {
 
             // Assign the tmpStudent it's id
-            newStudent->id = previousValidation.previousInt;
+            tmpStudent->id = previousValidation.previousInt;
         }
 
         // Flush the buffer
@@ -244,10 +266,10 @@ void enqueue(StudentPtr *headPtr, StudentPtr *tailPtr) {
         } else {
 
             // Allocate the space for the students name on the heap
-            newStudent->name = (char *) malloc(previousValidation.previousSize * sizeof(char));
+            tmpStudent->name = (char *) malloc(previousValidation.previousSize * sizeof(char));
 
             // Check if memory cannot be allocate for the tmpStudent's name
-            if (newStudent->name == NULL) {
+            if (tmpStudent->name == NULL) {
 
                 // Display an error message
                 printf("Oops.. Memory cannot be allocated for adding a new student.  The application is closing as it cannot go any further.");
@@ -257,7 +279,7 @@ void enqueue(StudentPtr *headPtr, StudentPtr *tailPtr) {
             }
 
             // Assign the student to it's name
-            memcpy(newStudent->name, tmp, previousValidation.previousSize);
+            memcpy(tmpStudent->name, tmp, previousValidation.previousSize);
         }
 
         // Flush the Buffer
@@ -287,10 +309,10 @@ void enqueue(StudentPtr *headPtr, StudentPtr *tailPtr) {
         } else {
 
             // Allocate the space for the students school name on the heap
-            newStudent->schoolName = (char *) malloc(previousValidation.previousSize * sizeof(char));
+            tmpStudent->schoolName = (char *) malloc(previousValidation.previousSize * sizeof(char));
 
             // Check if memory cannot be allocate for the tmpStudent's school name
-            if (newStudent->schoolName == NULL) {
+            if (tmpStudent->schoolName == NULL) {
 
                 // Display an error message
                 printf("Oops.. Memory cannot be allocated for adding a new student.  The application is closing as it cannot go any further.");
@@ -300,7 +322,7 @@ void enqueue(StudentPtr *headPtr, StudentPtr *tailPtr) {
             }
 
             // Assign the student to it's school name
-            memcpy(newStudent->schoolName, tmp, previousValidation.previousSize);
+            memcpy(tmpStudent->schoolName, tmp, previousValidation.previousSize);
         }
 
         // Flush the Buffer
@@ -330,10 +352,10 @@ void enqueue(StudentPtr *headPtr, StudentPtr *tailPtr) {
         } else {
 
             // Allocate the space for the students program name on the heap
-            newStudent->programName = (char *) malloc(previousValidation.previousSize * sizeof(char));
+            tmpStudent->programName = (char *) malloc(previousValidation.previousSize * sizeof(char));
 
             // Check if memory cannot be allocate for the tmpStudent's program name
-            if (newStudent->programName == NULL) {
+            if (tmpStudent->programName == NULL) {
 
                 // Display an error message
                 printf("Oops.. Memory cannot be allocated for adding a new student.  The application is closing as it cannot go any further.");
@@ -343,7 +365,7 @@ void enqueue(StudentPtr *headPtr, StudentPtr *tailPtr) {
             }
 
             // Assign the student to it's program name
-            memcpy(newStudent->programName, tmp, previousValidation.previousSize);
+            memcpy(tmpStudent->programName, tmp, previousValidation.previousSize);
         }
 
         // Flush the Buffer
@@ -372,7 +394,7 @@ void enqueue(StudentPtr *headPtr, StudentPtr *tailPtr) {
         } else {
 
             // Assign the tmpStudent it's graduating year
-            newStudent->graduatingYear = previousValidation.previousInt;
+            tmpStudent->graduatingYear = previousValidation.previousInt;
         }
 
         // Flush the buffer
@@ -401,7 +423,7 @@ void enqueue(StudentPtr *headPtr, StudentPtr *tailPtr) {
         } else {
 
             // Assign the tmpStudent it's GPA
-            newStudent->gpa = previousValidation.previousFloat;
+            tmpStudent->gpa = previousValidation.previousFloat;
         }
 
         // Flush the buffer
@@ -409,14 +431,14 @@ void enqueue(StudentPtr *headPtr, StudentPtr *tailPtr) {
     } while (previousValidation.previousFloat == -1);
 
     // Puts the newly created student at the top of the list while pushing everything down
-    if (isEmpty(*headPtr)) {
+    if (isEmpty(*head)) {
 
-        *headPtr = newStudent;
-        *tailPtr = newStudent;
+        *head = tmpStudent;
+        *tail = tmpStudent;
     } else {
 
-        (*tailPtr)->nextPtr = newStudent;
-        *tailPtr = newStudent;
+        (*tail)->next = tmpStudent;
+        *tail = tmpStudent;
     }
 
     // Print success message and new line for formatting
@@ -435,7 +457,7 @@ void dequeue(StudentPtr *headPtr, StudentPtr *tailPtr) {
 
     StudentPtr lostNode = (*headPtr);
 
-    *headPtr = (*headPtr)->nextPtr;
+    *headPtr = (*headPtr)->next;
 
     if (isEmpty(*headPtr)) { // if queue is empty at this point
         // then set tail-pointer to NULL
@@ -527,7 +549,7 @@ char isUniqueId(StudentPtr head, int id) {
         }
 
         // Move to the next item in the stack
-        current = current->nextPtr;
+        current = current->next;
     }
 
     // Return true (passed id is unique)
