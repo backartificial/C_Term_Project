@@ -1,5 +1,5 @@
 /**
- * File: Stack_ClassProject/queue.c
+ * File: Data_Structures_C_ClassProject/Part_B/queue.c
  * Assignment: Final_Project
  * Creation date: July 10, 2018
  * Last Modified: July 13, 2018 
