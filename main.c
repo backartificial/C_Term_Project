@@ -1,8 +1,8 @@
 /**
  * File: Data_Structures_C_ClassProject/Part_B/queue.c
  * Assignment: Final_Project
- * Creation date: July 10, 2018
- * Last Modified: July 13, 2018
+ * Creation date: July 16, 2018
+ * Last Modified: July 20, 2018
  *
  * GitHub Link: https://github.com/groverb/Data_Structures_C_ClassProject
  *
@@ -32,7 +32,8 @@
  * @item programName: is the pointer to the  name of the program that the student is in
  * @item graduatingYear: is the year that the student is intended in graduating
  * @item gpa: is the students current GPA
- * @item next: is the pointer to the next item in the stack
+ * @item leftPtr: is the pointer to the left child in the tree
+ * @item rightPtr: is the pointer to the right child in the tree
  *
  */
 typedef struct node {
@@ -43,87 +44,103 @@ typedef struct node {
     char *programName;
     int graduatingYear;
     float gpa;
-    struct node *next;
+    struct node *leftPtr;
+    struct node *rightPtr;
 } student_t, Student, *StudentPtr;
 
 // Define the function prototypes
-void instructions(void); // Function used to display menu options
-void enqueue(StudentPtr*, StudentPtr*); // Function used to add a student to the queue
-void dequeue(StudentPtr*, StudentPtr*); // Function used to remove a student from the queue
-void printTop(StudentPtr); // Function to print the first student in the queue
-void printAll(StudentPtr); // Function to print all students in the queue
-void printStudent(StudentPtr); // Function used to print the student information to the screen
-char isEmpty(StudentPtr); // Function used to check if the queue is empty
-char isUniqueId(StudentPtr, int); // Function used to check if the entered id is unique
-void exitQueue(StudentPtr*, StudentPtr*); // Function to exit the application section
+void insertStudent(StudentPtr*);
+void inOrder(StudentPtr);
+void getInputs(StudentPtr* );
+void preOrder(StudentPtr);
+void postOrder(StudentPtr);
+void printStudent(StudentPtr);
+void deleteStudent(StudentPtr*, int);
+void searchNode(StudentPtr*, int, StudentPtr*, StudentPtr*, int*);
 
 // Define Class Variables
 static const size_t MAX_INPUT_LENGTH = (255 * sizeof(char));
 char tmp[255] = {0};
+
+// Stores the values to be validated in a global union
+static union {
+    // Declare the needed member for the union
+    // Declare the needed member for the union
+    size_t stringSize; // Stores the length of the string
+    int enteredInt; // Stores the value of the entered integer number
+    float enteredFloat; // Stores the value of the entered float number
+} tmpValidation;
 
 /**
  *
  * This method is used to run the core of the application section
  *
  */
-int main() {
+int main(){
     // Create the needed variables
-    StudentPtr head = NULL; // Create a NULL student head structure
-    StudentPtr tail = NULL; // Create a NULL student tail structure
+    StudentPtr root = NULL; // Create the tree root student    
     char choice; // Integer (int) to hold the menu choice of the user
 
     // Loop through and display the menu options
-    while(1) {
+    while(choice != 6) {
         // Call the method used to display the menu options
         instructions();
 
-        // Get the input from stdin and store it into the previousEntry variable
+        // Get the input from stdin and store it into the tmp variable
         fgets(tmp, MAX_INPUT_LENGTH, stdin);
+        
+        // Convert the entered menu option to an int
+        choice = atoi(tmp);
 
         // Check if the entered menu option is valid
-        if((choice = atoi(tmp)) != 0 && (choice >= 1 && choice <= 5)) {
+        if(choice != 0 && (choice >= 1 && choice <= 6)) {
             // Select the correct case based on the entered choice
             switch (choice) {
-                // Case to print the first student
+                // Case to add a student
                 case (1):
-                    // Call the method to print the first student
-                    printTop(head);
+                    // Call the method to add a student
+                    insertStudent(root);
                 break;
 
-                // Case to add a student to the queue
+                // Case to remove a student
                 case (2):
-                    // Call the method to add a student to the queue
-                    enqueue(&head, &tail);
-                break;
-
-                // Case to remove a student from the queue
-                case (3):
+                    // Ask the user to enter an Id
+                    // Search to make sure that the id is valid
+                    // Confirm that the user wants to remove the student
+                    // Pass the pointer to the deleteNode method and remove student
+                    // Call the method to remove a student from the list
                     // Print the confirmation message to remove the user
                     printf("\nAre you sure that you want to remove the student? [ y/Y - Yes | n/N - No]: ");
 
-                    // Store the entered character into the previousEntry variable
+                    // Store the entered character into the ch variable
                     int ch = getchar();
 
                     // Check to make sure that the entered confirmation character is either y/Y
                     if(ch != EOF && (ch == 'y' || ch == 'Y')) {
                         // Remove the student from the queue
-                        dequeue(&head, &tail);
+                        deleteStudent();
                     }else{
                         // Print a new line for formatting
                         printf("\n");
                     }
                 break;
 
-                // Case to print all students in the queue
-                case (4):
-                    // Call the Print All method to print all students in the queue
-                    printAll(head);
+                // Case to sort and print the students in pre-order
+                case (3):
+                    // Pass the root to preOrder to be sorted using that method
+                    preOrder(root);
                 break;
 
-                // Case for exiting the application section
+                // Case to sort and print the students in post-order
+                case (4):
+                    // Pass the root to postOrder to be sorted using that method
+                    postOrder(root);
+                break;
+
+                // Case to sort and print the students in in-order
                 case (5):
-                    // Call the method to exit this part of the application
-                    exitQueue(&head, &tail);
+                    // Pass the root to inOrder to be sorted using that method
+                    inOrder(root);
                 break;
             }
         }else{
@@ -134,86 +151,232 @@ int main() {
         // Flush the buffer
         FLUSH;
     }
+
+    // Call the method to clear out the tree and then exits the application section
 }
 
 /**
  *
- * This function is used to display the menu of the stack application
+ * This function is used to display the menu of the tree application
  *
  */
 void instructions() {
     // Display the menu options
     printf("Student List Management"
            "\n------------------------------------------------"
-           "\n1. Print First Student"
-           "\n2. Add Student"
-           "\n3. Remove First Student"
-           "\n4. Print Student List"
-           "\n5. Close Section"
+           "\n1. Add Student"
+           "\n2. Remove Student"
+           "\n3. Pre-Order Sort Student List"
+           "\n4. Post-Order Sort Student List"
+           "\n5. In-Order Print Students List"
+           "\n6. Close Section"
            "\n------------------------------------------------"
            "\nPlease Enter Menu Option: ");
 }
 
 /**
- *
- * This function is used to add a student to the queue
- *
- * @param head: is the start of the queue
- * @param tail: is the end of the queue
- *
+ * 
+ * This function is used to insert a student into the tree
+ * 
+ * @param root: is the pointer to the root of the tree
+ * 
  */
-void enqueue(StudentPtr *head, StudentPtr *tail) {
-    // Create the needed function variables
-    StudentPtr tmpStudent = (StudentPtr)malloc(sizeof(Student));
+void insertStudent(StudentPtr *root) {
+    // Create the needed variables
+    StudentPtr tmpStudent = NULL; // Create a NULL student	
 
-    // Check if memory cannot be allocate for the tmpStudent
-    if (tmpStudent == NULL) {
-        // Display an error message
-        printf("Oops...  Memory cannot be allocated for adding a new student.  The application is closing as it cannot go any further.");
+    // Check to see if the tmpValidation.enteredInt in 0 for allowing the entrance of a new student
+    if(tmpValidation.enteredInt == 0){
+        // Loop though and get the students id
+        do {
+            // Display a prompt message for the students id
+            printf("\n\tPlease Enter the Students ID (Number): ");
 
-        // Exit the application in error
-        exitQueue(head, tail);
+            // Get the input from stdin and store it into the previousEntry array
+            fgets(tmp, MAX_INPUT_LENGTH, stdin);
+
+            // Store the entered id into the validation.int union
+            tmpValidation.enteredInt = atoi(tmp);
+
+            // Check if the entered ID is valid
+            if(tmpValidation.enteredInt == 0 && *tmp != '0' || tmpValidation.enteredInt < 0 ) {
+                // Display an error message
+                printf("\n\tOops... That is an invalid Student Id.  Please try again.\n\n");
+
+                // Set the tmpId to 0 for error and loop continuation
+                tmpValidation.enteredInt = 0;
+            }
+
+            // Flush the buffer
+            FLUSH;
+        } while(tmpValidation.enteredInt == 0);
     }
 
-    // Stores the values to be validated
-    static union {
-        // Declare the needed member for the union
-        size_t stringSize; // Stores the length of the string
-        int enteredInt; // Stores the value of the entered integer number
-        float enteredFloat; // Stores the value of the entered float number
-    } tmpValidation;
-
-    // Print prompt for entering student information
-    printf("\nPlease Fill the Following Prompts to add a Student to the Queue:\n");
-
-    // Perform a loop to get the Students ID
-    do {
-        // Display a prompt message for the students id
-        printf("\n\tPlease Enter the Students ID (Number): ");
-
-        // Get the input from stdin and store it into the previousEntry array
-        fgets(tmp, MAX_INPUT_LENGTH, stdin);
-
-        // Store the entered id into the validation.int union
-        tmpValidation.enteredInt = atoi(tmp);
-
-        // Check if the entered ID is valid
-        if(tmpValidation.enteredInt == 0 && *tmp != '0' || tmpValidation.enteredInt < 0 || !isUniqueId(*head, tmpValidation.enteredInt)) {
+    // Check if root is NULL and perform action for empty tree
+    if (*root == NULL) {
+        // Allocate Space on the heap for the student
+        *root = (StudentPtr)malloc(sizeof(Student));
+        
+        // Check if the root could not be initialized on the heap
+        if (*root == NULL) {
             // Display an error message
-            printf("\n\tOops... That is an invalid Student Id.  Please try again.\n\n");
+            printf("Oops...  Memory cannot be allocated for adding a new student.  The application is closing as it cannot go any further.");
 
-            // Set the tmpId to 0 for error and loop continuation
-            tmpValidation.enteredInt = 0;
+            // Exit the application in error
+            //exitApplication();
+        }
+        
+        // Set the root attributes
+        (*root)->id = tmpValidation.enteredInt; // Set the student id to the entered id
+        getInputs(root); // Pass the root pointer to the method that prompts the user to enter the other needed attributes
+        (*root)->leftPtr = NULL; // Set the left child pointer to NULL
+        (*root)->rightPtr = NULL; // Set th right child pointer to NULL
+   }else{
+        // Check if the entered int (id) is less than the root's id
+        if(tmpValidation.enteredInt < (*root)->id) {
+            // Check if the left pointer of root is not NULL
+            if((*root)->leftPtr != NULL){
+                // Recursively call the method again
+                insertStudent(&((*root)->leftPtr));
+            }else{
+                // Set the tmpStudent to a place on the heap
+                tmpStudent = (StudentPtr)malloc(sizeof(Student));
+                
+                // Set the tmpStudent attributes
+                tmpStudent->id = tmpValidation.enteredInt; // Set the student id to the entered id
+                getInputs(&tmpStudent); // Pass the tmpStudent pointer to the method that prompts the user to enter the other needed attributes
+                
+                // Set the student node left child to the tmpStudent
+                (*root)->leftPtr = tmpStudent;
+            }         
+        }else if(tmpValidation.enteredInt > (*root)->id) {
+            // Check if the right pointer of root is not NULL
+            if((*root)->rightPtr != NULL){
+                // Recursively call the method again
+                insertStudent(&((*root)->rightPtr));
+            }else{
+                // Set the tmpStudent to a place on the heap
+                tmpStudent = (StudentPtr)malloc(sizeof(Student));
+                
+                // Set the tmpStudent attributes
+                tmpStudent->id = tmpValidation.enteredInt; // Set the student id to the entered id
+                getInputs(&tmpStudent); // Pass the tmpStudent pointer to the method that prompts the user to enter the other needed attributes
+                
+                // Set the student node left child to the tmpStudent
+                (*root)->rightPtr = tmpStudent;
+            }          
         }else{
-            // Assign the tmpStudent it's id
-            tmpStudent->id = tmpValidation.enteredInt;
+            printf("-duplicate-not-inserted\n");  
+        }
+        
+        // Set the child pointers to NULL
+        (*tmpStudent)->leftPtr = NULL; // Set the left child pointer to NULL
+        (*tmpStudent)->rightPtr = NULL; // Set th right child pointer to NULL
+    }
+    
+    // Set the tmpValidation.enteredInt to 0 to act as a clear
+    tmpValidation.enteredInt = 0;
+} 
+
+/**
+ * 
+ * This function is used to print the students using in order sort
+ * 
+* @param node: is a node of the tree (in iteration)
+ * 
+ */
+void inOrder(StudentPtr node) {
+    // Check to make sure that the list/tree is not NULL
+    if(node == NULL) {
+        // Display an empty student tree message
+        printf("\nLooks like the Student List is empty.  Please add items to the list to view them.\n\n");
+    }else{
+        // Check to make sure that there is a child to the left
+        if(node->leftPtr != NULL) {
+            // Traverse to the left child
+            inOrder(node->leftPtr);
         }
 
-        // Flush the buffer
-        FLUSH;
-    } while(tmpValidation.enteredInt == 0);
+        // Print the student's information to the screen
+        printStudent(node);
 
-    // Perform a loop to get the Students Name
+        // Check to make sure that there is a child to the right
+        if(node->rightPtr != NULL) {
+            // Traverse to the right child
+            inOrder(node->rightPtr);
+        } 
+    }
+}
+
+/**
+ * 
+ * This function is used to print the students using pre order sort
+ * 
+* @param node: is a node of the tree (in iteration)
+ * 
+ */
+void preOrder(StudentPtr node) {    
+    // Check to make sure that the list/tree is not NULL
+    if(node == NULL) {
+        // Display an empty student tree message
+        printf("\nLooks like the Student List is empty.  Please add items to the list to view them.\n\n");
+    }else{
+        // Print the student's information to the screen
+        printStudent(node);
+        
+        // Check to make sure that there is a child to the left
+        if(node->leftPtr != NULL) {
+            // Traverse to the left child
+            preOrder(node->leftPtr);
+        }
+
+        // Check to make sure that there is a child to the right
+        if(node->rightPtr != NULL) {
+            // Traverse to the right child
+            preOrder(node->rightPtr);
+        } 
+    }
+} 
+
+/**
+ * 
+ * This function is used to print the students using post order sort
+ * 
+ * @param node: is a node of the tree (in iteration)
+ * 
+ */
+void postOrder(StudentPtr root) {
+    // Check to make sure that the list/tree is not NULL
+    if(node == NULL) {
+        // Display an empty student tree message
+        printf("\nLooks like the Student List is empty.  Please add items to the list to view them.\n\n");
+    }else{        
+        // Check to make sure that there is a child to the left
+        if(node->leftPtr != NULL) {
+            // Traverse to the left child
+            preOrder(node->leftPtr);
+        }
+
+        // Check to make sure that there is a child to the right
+        if(node->rightPtr != NULL) {
+            // Traverse to the right child
+            preOrder(node->rightPtr);
+        }
+        
+        // Print the student's information to the screen
+        printStudent(node);
+    }
+}
+
+/**
+ * 
+ * This function is used to prompt the user for the other student attributes (not including id, leftPtr, or rightPtr)
+ * 
+ * @param node: is the student node adding values to
+ * 
+ */
+void getInputs(StudentPtr* node){
+    // Perform the loop and get the Students Name
     do {
         // Display prompt message getting the students name
         printf("\tPlease Enter the Students Name: ");
@@ -233,22 +396,22 @@ void enqueue(StudentPtr *head, StudentPtr *tail) {
             printf("\n\tOops...  That's an invalid Student Name.  Please try again.\n\n");
         }else{
             // Allocate the space for the students name on the heap
-            tmpStudent->name = (char *)malloc(tmpValidation.stringSize * sizeof(char));
+            (*node)->name = (char *)malloc(tmpValidation.stringSize * sizeof(char));
 
-            // Check if memory cannot be allocate for the tmpStudent's name
-            if(tmpStudent->name == NULL) {
+            // Check if memory cannot be allocate for the (*rootPtr)'s name
+            if((*node)->name == NULL) {
                 // Display an error message
                 printf("Oops...  Memory cannot be allocated for adding a new student.  The application is closing as it cannot go any further.");
 
                 // Free the current tmp student
-                free(tmpStudent);
+                free((*node));
 
                 // Exit the application in error
-                exitQueue(head, tail);
+                // exitQueue(head, tail);
             }
 
             // Assign the student to it's name
-            memcpy(tmpStudent->name, tmp, tmpValidation.stringSize);
+            memcpy((*node)->name, tmp, tmpValidation.stringSize);
         }
 
         // Flush the Buffer
@@ -275,23 +438,23 @@ void enqueue(StudentPtr *head, StudentPtr *tail) {
             printf("\n\tOops...  That's an invalid School Name.  Please try again.\n\n");
         }else{
             // Allocate the space for the students school name on the heap
-            tmpStudent->schoolName = (char *)malloc(tmpValidation.stringSize * sizeof(char));
+            (*node)->schoolName = (char *)malloc(tmpValidation.stringSize * sizeof(char));
 
-            // Check if memory cannot be allocate for the tmpStudent's school name
-            if(tmpStudent->schoolName == NULL) {
+            // Check if memory cannot be allocate for the (*rootPtr)'s school name
+            if((*node)->schoolName == NULL) {
                 // Display an error message
                 printf("Oops...  Memory cannot be allocated for adding a new student.  The application is closing as it cannot go any further.");
 
                 // Free the current tmp student
-                free(tmpStudent->name);
-                free(tmpStudent);
+                free((*node)->name);
+                free((*node));
 
                 // Exit the application in error
-                exitQueue(head, tail);
+                // exitQueue(head, tail);
             }
 
             // Assign the student to it's school name
-            memcpy(tmpStudent->schoolName, tmp, tmpValidation.stringSize);
+            memcpy((*node)->schoolName, tmp, tmpValidation.stringSize);
         }
 
         // Flush the Buffer
@@ -318,24 +481,24 @@ void enqueue(StudentPtr *head, StudentPtr *tail) {
             printf("\n\tOops...  That's an invalid Program Name.  Please try again.\n\n");
         }else{
             // Allocate the space for the students program name on the heap
-            tmpStudent->programName = (char *)malloc(tmpValidation.stringSize * sizeof(char));
+            (*node)->programName = (char *)malloc(tmpValidation.stringSize * sizeof(char));
 
-            // Check if memory cannot be allocate for the tmpStudent's program name
-            if(tmpStudent->programName == NULL) {
+            // Check if memory cannot be allocate for the (*rootPtr)'s program name
+            if((*node)->programName == NULL) {
                 // Display an error message
                 printf("Oops...  Memory cannot be allocated for adding a new student.  The application is closing as it cannot go any further.");
 
                 // Free the current tmp student
-                free(tmpStudent->name);
-                free(tmpStudent->schoolName);
-                free(tmpStudent);
+                free((*node)->name);
+                free((*node)->schoolName);
+                free((*node));
 
                 // Exit the application in error
-                exitQueue(head, tail);
+                // exitQueue(head, tail);
             }
 
             // Assign the student to it's program name
-            memcpy(tmpStudent->programName, tmp, tmpValidation.stringSize);
+            memcpy((*node)->programName, tmp, tmpValidation.stringSize);
         }
 
         // Flush the Buffer
@@ -361,8 +524,8 @@ void enqueue(StudentPtr *head, StudentPtr *tail) {
             // Set the tmpGraduatingYear to 0 for error and loop continuation
             tmpValidation.enteredInt = 0;
         }else{
-            // Assign the tmpStudent it's graduating year
-            tmpStudent->graduatingYear = tmpValidation.enteredInt;
+            // Assign the (*rootPtr) it's graduating year
+            (*node)->graduatingYear = tmpValidation.enteredInt;
         }
 
         // Flush the buffer
@@ -388,129 +551,13 @@ void enqueue(StudentPtr *head, StudentPtr *tail) {
             // Set the tmpGpa to -1 for error and loop continuation
             tmpValidation.enteredFloat = -1;
         }else{
-            // Assign the tmpStudent it's GPA
-            tmpStudent->gpa = tmpValidation.enteredFloat;
+            // Assign the (*rootPtr) it's GPA
+            (*node)->gpa = tmpValidation.enteredFloat;
         }
 
         // Flush the buffer
         FLUSH;
-    } while(tmpValidation.enteredFloat == -1);
-
-    // Set the student to point to NULL
-    tmpStudent->next = NULL;
-
-    // Check if the queue is empty
-    if(isEmpty(*head)) {
-        // Set the head and tail of the queue to the new student
-        *head = tmpStudent;
-        *tail = tmpStudent;
-    }else{
-        // Set the tail next pointer to the point to the new student
-        (*tail)->next = tmpStudent;
-
-        // Set the tail to the new student
-        *tail = tmpStudent;
-    }
-
-    // Print success message and new line for formatting
-    printf("\n\tStudent Added Successfully!\n\n");
-
-    // Return back to the main menu
-    return;
-}
-
-/**
- *
- * This function is used to remove a student from the queue
- *
- * @param head: is the first student in the queue
- * @param tail: is the last student in the queue
- *
- */
-void dequeue(StudentPtr *head, StudentPtr *tail) {
-    // Check if the queue is empty
-    if (isEmpty(*head)) {
-        // Display error message
-        printf("\nOops...  Unable to remove student from the list as there are no students in the list.\n\n");
-    }else{
-        // Create a new student item that holds the head item
-        StudentPtr poppedStudent = (*head);
-
-        // Move the head to the next stack item
-        *head = (*head)->next;
-
-        // Check to see if the queue is NULL after changing it to the next item in the queue
-        if(isEmpty(*head)) {
-            // Set tail to NULL
-            *tail = NULL;
-        }
-
-        // Free the memory assignment of the popped students name
-        free(poppedStudent->name);
-
-        // Free the memory assignment of the popped students school name
-        free(poppedStudent->schoolName);
-
-        // Free the memory assignment of the popped students program name
-        free(poppedStudent->programName);
-
-        // Free the memory assignment of the popped student item
-        free(poppedStudent);
-
-        // Display Success pop message
-        printf("\nStudent Successfully removed from the List.\n\n");
-
-        // Flush the Buffer
-        FLUSH;
-    }
-}
-
-/**
- *
- * This function is used to print only the first student in the queue
- *
- * @param head: is the first student in the queue
- *
- */
-void printTop(StudentPtr head) {
-    // Check if the queue is empty
-    if(isEmpty(head)) {
-        // Display an empty student queue message
-        printf("\nLooks like the Student List is empty.  Please add items to the list to view them.\n\n");
-    }else{
-        // Print the information for the first student
-        printStudent(head);
-    }
-}
-
-/**
- *
- * This function is used to iterate through the queue and print the students information
- *
- * @param head: is the first student in the queue
- *
- */
-void printAll(StudentPtr head) {
-    // Check if the queue is empty
-    if(isEmpty(head)) {
-        // Display an empty student queue message
-        printf("\nLooks like the Student List is empty.  Please add items to the list to view them.\n\n");
-    }else{
-        // Create a tmp student that points to the head of the student queue used for iteration
-        StudentPtr current = head;
-
-        // Print function starter
-        printf("\n\n--------------- Printing Students List --------------\n");
-
-        // Look through the student queue while the current item is not NULL
-        while(current != NULL) {
-            // Call the function that prints student information in the console for the iterated student in the queue
-            printStudent(current);
-
-            // Move to the next item in the queue
-            current = current->next;
-        } // end while
-    }
+    }while(tmpValidation.enteredFloat == -1);
 }
 
 /**
@@ -528,71 +575,150 @@ void printStudent(StudentPtr student) {
 }
 
 /**
- *
- * This function is used to check and see if the queue of students is empty
- *
- * @param head: is the head of the student queue
- * @return true/false - depending on if the head student pointer is NULL or not
+ * 
+ * This function is used to delete a student from the tree
+ * 
+ * @param student: is the student being removed
  *
  */
-char isEmpty(StudentPtr head) {
-    // Return the head or NULL is the queue is empty
-    return head == NULL;
+void deleteStudent(StudentPtr *student) {
+    // Create the needed variables
+    StudentPtr parentStudent = NULL, tmpStudent = NULL, replacementStudent;
+    
+    // Check to see if the passed student is nULL
+    if(*student == NULL) {
+        // Display an empty student tree message
+        printf("\nLooks like the Student List is empty.  Please add items to the list to view them.\n\n");
+        
+        // Return to not continue any further processing
+        return;
+    }
+    
+    // Check if the student node being deleted has 2 children (left & right)
+    if (tmpStudent->leftPtr != NULL && tmpStudent->rightPtr != NULL) {
+        // Set the parentStudent to the tmpStudent
+        parentStudent = tmpStudent;
+        
+        // Set the replacementStudent to the tmpStudent rightPtr
+        replacementStudent = tmpStudent->rightPtr ;
+
+        // Loop through while the replacementStudent leftPtr is not NULL
+        while(replacementStudent->leftPtr != NULL) {
+            // Set the parentStudent to the replacementStudent
+            parentStudent = replacementStudent;
+            
+            // Set the replacementStudent to the replacementStudent's leftPtr
+            replacementStudent = replacementStudent->leftPtr;
+        }
+        
+        // Set the tmpStudent to the replacementStudent
+        tmpStudent = replacementStudent;
+    }
+
+    // Check is the student node being deleted has no children
+    if(tmpStudent->leftPtr == NULL && tmpStudent->rightPtr == NULL) {
+        // Check if the parentStudens rightPtr is equal to tmpStudent
+        if(parentStudent->rightPtr == tmpStudent) {
+            // Set parentStudents rightPtr to NULL
+            parentStudent->rightPtr = NULL;
+        }else{
+            // Set parentStudent leftPtr to NULL
+            parentStudent->leftPtr = NULL;
+        }
+
+        // Free the tmpStudent
+        free(tmpStudent->name);
+        free(tmpStudent->schoolName);
+        free(tmpStudent->programName);
+        free(tmpStudent);
+        
+        // Return out of the method
+        return;
+    }
+
+    // Check if the student node has only a rightPtr
+   if(tmpStudent->leftPtr == NULL && tmpStudent->rightPtr != NULL) {
+        // Check if the parentStudents leftPtr is equal to the tmpStudent
+        if(parentStudent->leftPtr == tmpStudent) {
+            // Set the parentStudents leftPtr to the tmpStudents rightPtr
+            parentStudent->leftPtr = tmpStudent->rightPtr;
+        }else{
+            // Set the parentStuends rightPtr to the tmpStudents rightPtr
+            parentStudent->rightPtr = tmpStudent->rightPtr;
+        }
+
+        // Free the tmpStudent
+        free(tmpStudent->name);
+        free(tmpStudent->schoolName);
+        free(tmpStudent->programName);
+        free(tmpStudent);
+        
+        // Return out of the method
+        return;
+    }
+
+    // Check if the student node has only a rightPtr
+    if(tmpStudent->leftPtr != NULL && tmpStudent->rightPtr == NULL ) {
+        // Check if the parentStudents leftPtr is equal to the tmpStudents leftPtr
+        if(parentStudent->leftPtr == tmpStudent) {
+            // Set the parentStudents leftPtr to the tmpStudents leftPtr
+            parentStudent->leftPtr = tmpStudent->leftPtr;
+        }else{
+            // Set the parentStudents rightPtr to the tmpStudents leftPtr
+            parentStudent->rightPtr = tmpStudent->leftPtr;
+        }
+
+        // Free the tmpStudent
+        free(tmpStudent->name);
+        free(tmpStudent->schoolName);
+        free(tmpStudent->programName);
+        free(tmpStudent);
+        
+        // Return out of the method
+        return;
+    }
 }
 
 /**
- *
- * This function is used to iterate through the queue and check if the passed id is unique
- *
- * @param head: is the first item in the stack
- * @param id: is the ID to check if unique among the stack
- * @return [1 - When the passed id is unique | 0 - When the passed id is not unique]
- *
+ * 
+ * This method is used for searching for a student
+ * 
+ * @param student: is the student being searched for
+ * @param id: is the id being matched against
+ * @param parent: is the parent node
+ * @param tmp: is the tmp node
+ * @param found: is the boolean value of true (1) false (0)
  */
-char isUniqueId(StudentPtr head, int id) {
-    // Create a previousEntry student that points to the head of the student stack used for iteration
-    StudentPtr current = head;
+void searchNode(StudentPtr *student, unsigned int id, StudentPtr *parent, StudentPtr *tmp, int *found) {
+    // Set the needed variables
+    StudentPtr tmpPtr = *student ;
+    *found = 0;
+    *parent = NULL;
 
-    // Look through the student queue while the next item is not NULL
-    while(current != NULL) {
-        // Check if the iterated student ID is the same as the passed id
-        if(current->id == id) {
-            // Return false (passed id is not unique)
-            return 0;
+    // Loop through the tmpPrt while it is not NULL
+    while(tmpPtr != NULL) {
+        // Check if the tmpPtr id is the same as the passed in id
+        if(tmpPtr->id == id) {
+            // Set found to true
+            *found = 1;
+            
+            // Set the tmp to the tmpPtr
+            *tmp = tmpPtr;
+            
+            // Return out of the function
+            return;
         }
 
-        // Move to the next item in the stack
-        current = current->next;
-    }
-
-    // Return true (passed id is unique)
-    return 1;
-}
-
-/**
- *
- * This function is used to exit the application section
- *
- * @param head: is the head of the queue
- * @param tail: is the tail of the queue
- *
- */
-void exitQueue(StudentPtr *head, StudentPtr *tail) {
-    // Check to make sure that the queue is not empty
-    if(!isEmpty(*head)) {
-        // Create a tmp student that points to the head of the student queue used for iteration
-        StudentPtr current = *head;
-
-        // Loop through the queue and remove the student
-        while(current != NULL) {
-            // Remove the iterated student from the queue
-            dequeue(&current, tail);
+        // Set the parent to tmpPtr
+        *parent = tmpPtr;
+       
+        // Check if the tmpPtr id is greater than the passed in id
+        if (tmpPtr->id > id) {
+            // Set the tmpPtr to the left child of tmpPtr
+            tmpPtr = tmpPtr->leftPtr;
+        }else{
+            // Set the tmpPtr to the right child of tmpPtr
+            tmpPtr = tmpPtr -> rightPtr;
         }
     }
-
-    // Print the exiting message
-    printf("\nClosing Application Section.\n\n");
-
-    // Exit the application without error
-    exit(0);
 }
