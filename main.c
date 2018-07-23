@@ -2,7 +2,7 @@
  * File: Data_Structures_C_ClassProject/Part_B/queue.c
  * Assignment: Final_Project
  * Creation date: July 16, 2018
- * Last Modified: July 20, 2018
+ * Last Modified: July 23, 2018
  *
  * GitHub Link: https://github.com/groverb/Data_Structures_C_ClassProject
  *
@@ -55,8 +55,10 @@ void getInputs(StudentPtr* );
 void preOrder(StudentPtr);
 void postOrder(StudentPtr);
 void printStudent(StudentPtr);
-void deleteStudent(StudentPtr*, int);
-void searchNode(StudentPtr*, int, StudentPtr*, StudentPtr*, int*);
+void deleteStudent(StudentPtr*, StudentPtr*);
+StudentPtr searchStudent(StudentPtr*, unsigned int, StudentPtr);
+void instructions();
+void freeTree(StudentPtr);
 
 // Define Class Variables
 static const size_t MAX_INPUT_LENGTH = (255 * sizeof(char));
@@ -78,7 +80,7 @@ static union {
  */
 int main(){
     // Create the needed variables
-    StudentPtr root = NULL; // Create the tree root student    
+    StudentPtr root = NULL; // Create the tree root student
     char choice; // Integer (int) to hold the menu choice of the user
 
     // Loop through and display the menu options
@@ -88,7 +90,7 @@ int main(){
 
         // Get the input from stdin and store it into the tmp variable
         fgets(tmp, MAX_INPUT_LENGTH, stdin);
-        
+
         // Convert the entered menu option to an int
         choice = atoi(tmp);
 
@@ -99,48 +101,117 @@ int main(){
                 // Case to add a student
                 case (1):
                     // Call the method to add a student
-                    insertStudent(root);
+                    insertStudent(&root);
                 break;
 
                 // Case to remove a student
                 case (2):
-                    // Ask the user to enter an Id
-                    // Search to make sure that the id is valid
-                    // Confirm that the user wants to remove the student
-                    // Pass the pointer to the deleteNode method and remove student
-                    // Call the method to remove a student from the list
-                    // Print the confirmation message to remove the user
-                    printf("\nAre you sure that you want to remove the student? [ y/Y - Yes | n/N - No]: ");
-
-                    // Store the entered character into the ch variable
-                    int ch = getchar();
-
-                    // Check to make sure that the entered confirmation character is either y/Y
-                    if(ch != EOF && (ch == 'y' || ch == 'Y')) {
-                        // Remove the student from the queue
-                        deleteStudent();
-                    }else{
-                        // Print a new line for formatting
-                        printf("\n");
+                    // Set the tmpValidation.enteredInt 0 to make sure that it is clear
+                    tmpValidation.enteredInt = 0;
+                    
+                    // Check if the tree is empty
+                    if(root == NULL) {
+                        // Display an empty list message
+                        printf("\nLooks like the Student List is empty.  Please add items to the list to view them.\n\n");
+                        
+                        // Break out of this case
+                        break;
                     }
+                    
+                    // Loop though and ask the user to enter an Id
+                    do {
+                        // Display a prompt message for the students id
+                        printf("\nPlease Enter the Students ID (Number): ");
+
+                        // Get the input from stdin and store it into the previousEntry array
+                        fgets(tmp, MAX_INPUT_LENGTH, stdin);
+
+                        // Store the entered id into the validation.int union
+                        tmpValidation.enteredInt = atoi(tmp);
+
+                        // Check if the entered ID is valid
+                        if(tmpValidation.enteredInt == 0 && *tmp != '0' || tmpValidation.enteredInt < 0) {
+                            // Display an error message
+                            printf("\nOops... That is an invalid Student Id.  Please try again.\n\n");
+
+                            // Set the tmpId to 0 for error and loop continuation
+                            tmpValidation.enteredInt = 0;
+                        }
+
+                        // Flush the buffer
+                        FLUSH;
+                    } while(tmpValidation.enteredInt == 0);
+                    
+                    // Create the needed tmp variables
+                    StudentPtr tmpStudent = NULL;
+                    StudentPtr tmpParent = NULL;
+                    
+                    // Search to make sure that the id is valid
+                    if((tmpStudent = searchStudent(&root, tmpValidation.enteredInt, tmpParent)) != NULL) {
+printf("\n\n%p\n\n", tmpParent);
+                        // Confirm that the user wants to remove the student
+                        printf("\nAre you sure that you want to remove the student? [ y/Y - Yes | n/N - No]: ");
+
+                        // Store the entered character into the ch variable
+                        int ch = getchar();
+
+                        // Check to make sure that the entered confirmation character is either y/Y
+                        if(ch != EOF && (ch == 'y' || ch == 'Y')) {
+                            // Remove the student from the queue
+                            deleteStudent(&tmpStudent, &tmpParent);
+                            
+                            // Check if deleted the root or node with a parent
+                            if(tmpParent == NULL) {
+                                // Set the root to NULL
+                                root = NULL;
+                            }
+                        }else{
+                            // Print a new line for formatting
+                            printf("\n");
+                        }
+                    }else{
+                        //Display an error message stating that the student couldn't be found
+                        printf("\nOops...  A student with that id (%d) couldn't be found.\n\n", tmpValidation.enteredInt);
+                    }
+                    
+                    // Set the tmpValidation.enteredInt 0 to make sure that it is clear
+                    tmpValidation.enteredInt = 0;
                 break;
 
                 // Case to sort and print the students in pre-order
                 case (3):
+                    // Print header message
+                    printf("\n------ Student's List (Pre-Order Sort) ------\n");
+    
                     // Pass the root to preOrder to be sorted using that method
                     preOrder(root);
+                    
+                    // Print blank line for formatting
+                    printf("\n");
                 break;
 
                 // Case to sort and print the students in post-order
                 case (4):
+                    // Print header message
+                    printf("\n------ Student's List (Post-Order Sort) -----\n");
+
                     // Pass the root to postOrder to be sorted using that method
                     postOrder(root);
+                    
+                    // Print blank line for formatting
+                    printf("\n");
                 break;
 
                 // Case to sort and print the students in in-order
                 case (5):
+                    // Print header message
+                    printf("\n------- Student's List (In-Order Sort) -------\n");
+                    
                     // Pass the root to inOrder to be sorted using that method
                     inOrder(root);
+                    
+                    // Print blank line for formatting
+                    printf("\n");
                 break;
             }
         }else{
@@ -152,7 +223,11 @@ int main(){
         FLUSH;
     }
 
-    // Call the method to clear out the tree and then exits the application section
+    // Call the free tree method to remove all nodes from the tree
+    freeTree(root);
+    
+    // Return 0 out of the tree section of the application
+    return 0;
 }
 
 /**
@@ -175,15 +250,15 @@ void instructions() {
 }
 
 /**
- * 
+ *
  * This function is used to insert a student into the tree
- * 
+ *
  * @param root: is the pointer to the root of the tree
- * 
+ *
  */
 void insertStudent(StudentPtr *root) {
     // Create the needed variables
-    StudentPtr tmpStudent = NULL; // Create a NULL student	
+    StudentPtr tmpStudent = NULL; // Create a NULL student
 
     // Check to see if the tmpValidation.enteredInt in 0 for allowing the entrance of a new student
     if(tmpValidation.enteredInt == 0){
@@ -199,9 +274,9 @@ void insertStudent(StudentPtr *root) {
             tmpValidation.enteredInt = atoi(tmp);
 
             // Check if the entered ID is valid
-            if(tmpValidation.enteredInt == 0 && *tmp != '0' || tmpValidation.enteredInt < 0 ) {
+            if(tmpValidation.enteredInt == 0 && *tmp != '0' || tmpValidation.enteredInt < 0 || searchStudent(root, tmpValidation.enteredInt, NULL)) {
                 // Display an error message
-                printf("\n\tOops... That is an invalid Student Id.  Please try again.\n\n");
+                printf("\n\tOops... That is an invalid Student Id.  Please try again.\n");
 
                 // Set the tmpId to 0 for error and loop continuation
                 tmpValidation.enteredInt = 0;
@@ -216,7 +291,7 @@ void insertStudent(StudentPtr *root) {
     if (*root == NULL) {
         // Allocate Space on the heap for the student
         *root = (StudentPtr)malloc(sizeof(Student));
-        
+
         // Check if the root could not be initialized on the heap
         if (*root == NULL) {
             // Display an error message
@@ -225,7 +300,7 @@ void insertStudent(StudentPtr *root) {
             // Exit the application in error
             //exitApplication();
         }
-        
+
         // Set the root attributes
         (*root)->id = tmpValidation.enteredInt; // Set the student id to the entered id
         getInputs(root); // Pass the root pointer to the method that prompts the user to enter the other needed attributes
@@ -241,14 +316,14 @@ void insertStudent(StudentPtr *root) {
             }else{
                 // Set the tmpStudent to a place on the heap
                 tmpStudent = (StudentPtr)malloc(sizeof(Student));
-                
+
                 // Set the tmpStudent attributes
                 tmpStudent->id = tmpValidation.enteredInt; // Set the student id to the entered id
                 getInputs(&tmpStudent); // Pass the tmpStudent pointer to the method that prompts the user to enter the other needed attributes
-                
+
                 // Set the student node left child to the tmpStudent
                 (*root)->leftPtr = tmpStudent;
-            }         
+            }
         }else if(tmpValidation.enteredInt > (*root)->id) {
             // Check if the right pointer of root is not NULL
             if((*root)->rightPtr != NULL){
@@ -257,40 +332,41 @@ void insertStudent(StudentPtr *root) {
             }else{
                 // Set the tmpStudent to a place on the heap
                 tmpStudent = (StudentPtr)malloc(sizeof(Student));
-                
+
                 // Set the tmpStudent attributes
                 tmpStudent->id = tmpValidation.enteredInt; // Set the student id to the entered id
                 getInputs(&tmpStudent); // Pass the tmpStudent pointer to the method that prompts the user to enter the other needed attributes
-                
+
                 // Set the student node left child to the tmpStudent
                 (*root)->rightPtr = tmpStudent;
-            }          
-        }else{
-            printf("-duplicate-not-inserted\n");  
+            }
         }
-        
+
         // Set the child pointers to NULL
-        (*tmpStudent)->leftPtr = NULL; // Set the left child pointer to NULL
-        (*tmpStudent)->rightPtr = NULL; // Set th right child pointer to NULL
+        tmpStudent->leftPtr = NULL; // Set the left child pointer to NULL
+        tmpStudent->rightPtr = NULL; // Set th right child pointer to NULL
     }
-    
+
     // Set the tmpValidation.enteredInt to 0 to act as a clear
     tmpValidation.enteredInt = 0;
-} 
+    
+    // Display successful add message
+    printf("\nSuccess!  Student has been successfully added to the list.\n\n");
+}
 
 /**
- * 
+ *
  * This function is used to print the students using in order sort
- * 
-* @param node: is a node of the tree (in iteration)
- * 
+ *
+ * @param node: is a node of the tree (in iteration)
+ *
  */
 void inOrder(StudentPtr node) {
     // Check to make sure that the list/tree is not NULL
     if(node == NULL) {
         // Display an empty student tree message
         printf("\nLooks like the Student List is empty.  Please add items to the list to view them.\n\n");
-    }else{
+    }else{        
         // Check to make sure that there is a child to the left
         if(node->leftPtr != NULL) {
             // Traverse to the left child
@@ -304,18 +380,18 @@ void inOrder(StudentPtr node) {
         if(node->rightPtr != NULL) {
             // Traverse to the right child
             inOrder(node->rightPtr);
-        } 
+        }
     }
 }
 
 /**
- * 
+ *
  * This function is used to print the students using pre order sort
- * 
+ *
 * @param node: is a node of the tree (in iteration)
- * 
+ *
  */
-void preOrder(StudentPtr node) {    
+void preOrder(StudentPtr node) {
     // Check to make sure that the list/tree is not NULL
     if(node == NULL) {
         // Display an empty student tree message
@@ -323,7 +399,7 @@ void preOrder(StudentPtr node) {
     }else{
         // Print the student's information to the screen
         printStudent(node);
-        
+
         // Check to make sure that there is a child to the left
         if(node->leftPtr != NULL) {
             // Traverse to the left child
@@ -334,23 +410,23 @@ void preOrder(StudentPtr node) {
         if(node->rightPtr != NULL) {
             // Traverse to the right child
             preOrder(node->rightPtr);
-        } 
+        }
     }
-} 
+}
 
 /**
- * 
+ *
  * This function is used to print the students using post order sort
- * 
+ *
  * @param node: is a node of the tree (in iteration)
- * 
+ *
  */
-void postOrder(StudentPtr root) {
+void postOrder(StudentPtr node) {
     // Check to make sure that the list/tree is not NULL
     if(node == NULL) {
         // Display an empty student tree message
         printf("\nLooks like the Student List is empty.  Please add items to the list to view them.\n\n");
-    }else{        
+    }else{
         // Check to make sure that there is a child to the left
         if(node->leftPtr != NULL) {
             // Traverse to the left child
@@ -362,18 +438,18 @@ void postOrder(StudentPtr root) {
             // Traverse to the right child
             preOrder(node->rightPtr);
         }
-        
+
         // Print the student's information to the screen
         printStudent(node);
     }
 }
 
 /**
- * 
+ *
  * This function is used to prompt the user for the other student attributes (not including id, leftPtr, or rightPtr)
- * 
+ *
  * @param node: is the student node adding values to
- * 
+ *
  */
 void getInputs(StudentPtr* node){
     // Perform the loop and get the Students Name
@@ -569,156 +645,178 @@ void getInputs(StudentPtr* node){
  */
 void printStudent(StudentPtr student) {
     // Display the separator and student information
-    printf("-----------------------------------------------------\n");
     printf("ID: %d\nName: %s\nGraduating Year: %d\nGPA: %.2lf\nProgram Name: %s\nSchool Name: %s\n", student->id, student->name, student->graduatingYear, student->gpa, student->programName, student->schoolName);
-    printf("-----------------------------------------------------\n\n");
+    printf("-----------------------------------------------------\n");
 }
 
 /**
- * 
+ *
  * This function is used to delete a student from the tree
- * 
+ *
  * @param student: is the student being removed
  *
  */
-void deleteStudent(StudentPtr *student) {
+void deleteStudent(StudentPtr *student, StudentPtr *parent) {
     // Create the needed variables
-    StudentPtr parentStudent = NULL, tmpStudent = NULL, replacementStudent;
-    
+    StudentPtr replacementStudent = NULL;
+
     // Check to see if the passed student is nULL
-    if(*student == NULL) {
+    if((*student) == NULL) {
         // Display an empty student tree message
         printf("\nLooks like the Student List is empty.  Please add items to the list to view them.\n\n");
-        
+
         // Return to not continue any further processing
         return;
     }
-    
+
     // Check if the student node being deleted has 2 children (left & right)
-    if (tmpStudent->leftPtr != NULL && tmpStudent->rightPtr != NULL) {
+    if ((*student)->leftPtr != NULL && (*student)->rightPtr != NULL) {
         // Set the parentStudent to the tmpStudent
-        parentStudent = tmpStudent;
-        
+        (*parent) = (*student);
+
         // Set the replacementStudent to the tmpStudent rightPtr
-        replacementStudent = tmpStudent->rightPtr ;
+        replacementStudent = (*student)->rightPtr ;
 
         // Loop through while the replacementStudent leftPtr is not NULL
         while(replacementStudent->leftPtr != NULL) {
             // Set the parentStudent to the replacementStudent
-            parentStudent = replacementStudent;
-            
+            (*parent) = replacementStudent;
+
             // Set the replacementStudent to the replacementStudent's leftPtr
             replacementStudent = replacementStudent->leftPtr;
         }
-        
-        // Set the tmpStudent to the replacementStudent
-        tmpStudent = replacementStudent;
-    }
 
-    // Check is the student node being deleted has no children
-    if(tmpStudent->leftPtr == NULL && tmpStudent->rightPtr == NULL) {
-        // Check if the parentStudens rightPtr is equal to tmpStudent
-        if(parentStudent->rightPtr == tmpStudent) {
-            // Set parentStudents rightPtr to NULL
-            parentStudent->rightPtr = NULL;
-        }else{
-            // Set parentStudent leftPtr to NULL
-            parentStudent->leftPtr = NULL;
+        // Set the tmpStudent to the replacementStudent
+        (*student) = replacementStudent;
+    }else if((*student)->leftPtr == NULL && (*student)->rightPtr == NULL) { // Check is the student node being deleted has no children
+        // Check if there is a parent
+        if((*parent) != NULL) {
+            // Check if the parentStudens rightPtr is equal to tmpStudent
+            if((*parent)->rightPtr == (*student)) {
+                // Set parentStudents rightPtr to NULL
+                (*parent)->rightPtr = NULL;
+            }else{
+                // Set parentStudent leftPtr to NULL
+                (*parent)->leftPtr = NULL;
+            }
         }
 
-        // Free the tmpStudent
-        free(tmpStudent->name);
-        free(tmpStudent->schoolName);
-        free(tmpStudent->programName);
-        free(tmpStudent);
-        
-        // Return out of the method
-        return;
-    }
-
-    // Check if the student node has only a rightPtr
-   if(tmpStudent->leftPtr == NULL && tmpStudent->rightPtr != NULL) {
+        // Free the student
+        free((*student)->name);
+        free((*student)->schoolName);
+        free((*student)->programName);
+        free((*student));
+    }else if((*student)->leftPtr == NULL && (*student)->rightPtr != NULL) { // Check if the student node has only a rightPtr
         // Check if the parentStudents leftPtr is equal to the tmpStudent
-        if(parentStudent->leftPtr == tmpStudent) {
+        if((*parent)->leftPtr == (*student)) {
             // Set the parentStudents leftPtr to the tmpStudents rightPtr
-            parentStudent->leftPtr = tmpStudent->rightPtr;
+            (*parent)->leftPtr = (*student)->rightPtr;
         }else{
             // Set the parentStuends rightPtr to the tmpStudents rightPtr
-            parentStudent->rightPtr = tmpStudent->rightPtr;
+            (*parent)->rightPtr = (*student)->rightPtr;
         }
 
         // Free the tmpStudent
-        free(tmpStudent->name);
-        free(tmpStudent->schoolName);
-        free(tmpStudent->programName);
-        free(tmpStudent);
-        
-        // Return out of the method
-        return;
-    }
-
-    // Check if the student node has only a rightPtr
-    if(tmpStudent->leftPtr != NULL && tmpStudent->rightPtr == NULL ) {
+        free((*student)->name);
+        free((*student)->schoolName);
+        free((*student)->programName);
+        free((*student));
+    }else if((*student)->leftPtr != NULL && (*student)->rightPtr == NULL ) { // Check if the student node has only a rightPtr
         // Check if the parentStudents leftPtr is equal to the tmpStudents leftPtr
-        if(parentStudent->leftPtr == tmpStudent) {
+        if((*parent)->leftPtr == (*student)) {
             // Set the parentStudents leftPtr to the tmpStudents leftPtr
-            parentStudent->leftPtr = tmpStudent->leftPtr;
+            (*parent)->leftPtr = (*student)->leftPtr;
         }else{
             // Set the parentStudents rightPtr to the tmpStudents leftPtr
-            parentStudent->rightPtr = tmpStudent->leftPtr;
+            (*parent)->rightPtr = (*student)->leftPtr;
         }
 
         // Free the tmpStudent
-        free(tmpStudent->name);
-        free(tmpStudent->schoolName);
-        free(tmpStudent->programName);
-        free(tmpStudent);
-        
-        // Return out of the method
-        return;
+        free((*student)->name);
+        free((*student)->schoolName);
+        free((*student)->programName);
+        free((*student));
     }
+    
+    // Display a deletion confirmation message
+    printf("\nSuccess!  the student has been removed from the list.\n\n");
+    
+    // Set the student node to NULL
+    (*student) = NULL;
+
+    // Return out of the method
+    return;
+}
+
+/**
+ *
+ * This method is used for searching for a student
+ *
+ * @param student: is the student being searched for
+ * @param id: is the id being matched against
+ * @param parent: is the parent node of the student node
+ * 
+ */
+StudentPtr searchStudent(StudentPtr *student, unsigned int id, StudentPtr parent) {
+    // Set the needed variable
+    StudentPtr tmpStudent = *student;
+
+    // Loop through the tmpPrt while it is not NULL
+    while(tmpStudent != NULL) {
+        // Check if the tmpPtr id is the same as the passed in id
+        if(tmpStudent->id == id) {
+            // Check if it is the root node
+            if(tmpStudent == (*student)) {
+                // Set the parent to NULL
+                parent = NULL;
+            }
+            
+            // Return out of the function with the pointer to the found student
+            return tmpStudent;
+        }
+        
+        // Set the parent to the parent of the student node
+        parent = tmpStudent;
+
+        // Check if the tmpPtr id is greater than the passed in id
+        if(tmpStudent->id > id) {
+            // Set the tmpPtr to the left child of tmpPtr
+            tmpStudent = tmpStudent->leftPtr;
+        }else{
+            // Set the tmpPtr to the right child of tmpPtr
+            tmpStudent = tmpStudent->rightPtr;
+        }
+    }
+    
+    // Return NULL when the student cannot be found
+    return NULL;
 }
 
 /**
  * 
- * This method is used for searching for a student
+ * This function is used to going through the tree and removing each node
  * 
- * @param student: is the student being searched for
- * @param id: is the id being matched against
- * @param parent: is the parent node
- * @param tmp: is the tmp node
- * @param found: is the boolean value of true (1) false (0)
+ * @param root: is the root/or a node of the tree
+ * 
  */
-void searchNode(StudentPtr *student, unsigned int id, StudentPtr *parent, StudentPtr *tmp, int *found) {
-    // Set the needed variables
-    StudentPtr tmpPtr = *student ;
-    *found = 0;
-    *parent = NULL;
-
-    // Loop through the tmpPrt while it is not NULL
-    while(tmpPtr != NULL) {
-        // Check if the tmpPtr id is the same as the passed in id
-        if(tmpPtr->id == id) {
-            // Set found to true
-            *found = 1;
-            
-            // Set the tmp to the tmpPtr
-            *tmp = tmpPtr;
-            
-            // Return out of the function
-            return;
-        }
-
-        // Set the parent to tmpPtr
-        *parent = tmpPtr;
-       
-        // Check if the tmpPtr id is greater than the passed in id
-        if (tmpPtr->id > id) {
-            // Set the tmpPtr to the left child of tmpPtr
-            tmpPtr = tmpPtr->leftPtr;
-        }else{
-            // Set the tmpPtr to the right child of tmpPtr
-            tmpPtr = tmpPtr -> rightPtr;
-        }
+void freeTree(StudentPtr root) {
+    // Check if the root is empty
+    if (root == NULL) {
+        // Return out of the function as the tree is empty
+        return;
     }
+
+    // Go trough and move to the left nd then right nodes
+    freeTree(root->leftPtr);
+    freeTree(root->rightPtr);
+    
+    // Set the left and right pointers to NULL
+    root->leftPtr = NULL;
+    root->rightPtr = NULL;
+
+    // Free the items of the node
+    free(root->name);
+    free(root->schoolName);
+    free(root->programName);
+    free(root);
 }
