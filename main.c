@@ -44,6 +44,7 @@ typedef struct node {
     char *programName;
     int graduatingYear;
     float gpa;
+    struct node *parentPtr;
     struct node *leftPtr;
     struct node *rightPtr;
 } student_t, Student, *StudentPtr;
@@ -56,7 +57,7 @@ void preOrder(StudentPtr);
 void postOrder(StudentPtr);
 void printStudent(StudentPtr);
 void deleteStudent(StudentPtr*, StudentPtr*);
-StudentPtr searchStudent(StudentPtr*, unsigned int, StudentPtr);
+StudentPtr searchStudent(StudentPtr*, unsigned int);
 void instructions();
 void freeTree(StudentPtr);
 
@@ -142,13 +143,10 @@ int main(){
                         FLUSH;
                     } while(tmpValidation.enteredInt == 0);
                     
-                    // Create the needed tmp variables
                     StudentPtr tmpStudent = NULL;
-                    StudentPtr tmpParent = NULL;
                     
                     // Search to make sure that the id is valid
-                    if((tmpStudent = searchStudent(&root, tmpValidation.enteredInt, tmpParent)) != NULL) {
-printf("\n\n%p\n\n", tmpParent);
+                    if((tmpStudent = searchStudent(&root, tmpValidation.enteredInt)) != NULL) {
                         // Confirm that the user wants to remove the student
                         printf("\nAre you sure that you want to remove the student? [ y/Y - Yes | n/N - No]: ");
 
@@ -158,13 +156,7 @@ printf("\n\n%p\n\n", tmpParent);
                         // Check to make sure that the entered confirmation character is either y/Y
                         if(ch != EOF && (ch == 'y' || ch == 'Y')) {
                             // Remove the student from the queue
-                            deleteStudent(&tmpStudent, &tmpParent);
-                            
-                            // Check if deleted the root or node with a parent
-                            if(tmpParent == NULL) {
-                                // Set the root to NULL
-                                root = NULL;
-                            }
+                            deleteStudent(&tmpStudent, &tmpStudent->parentPtr);
                         }else{
                             // Print a new line for formatting
                             printf("\n");
@@ -274,7 +266,7 @@ void insertStudent(StudentPtr *root) {
             tmpValidation.enteredInt = atoi(tmp);
 
             // Check if the entered ID is valid
-            if(tmpValidation.enteredInt == 0 && *tmp != '0' || tmpValidation.enteredInt < 0 || searchStudent(root, tmpValidation.enteredInt, NULL)) {
+            if(tmpValidation.enteredInt == 0 && *tmp != '0' || tmpValidation.enteredInt < 0 || searchStudent(root, tmpValidation.enteredInt)) {
                 // Display an error message
                 printf("\n\tOops... That is an invalid Student Id.  Please try again.\n");
 
@@ -304,6 +296,7 @@ void insertStudent(StudentPtr *root) {
         // Set the root attributes
         (*root)->id = tmpValidation.enteredInt; // Set the student id to the entered id
         getInputs(root); // Pass the root pointer to the method that prompts the user to enter the other needed attributes
+        (*root)->parentPtr = NULL; // Set the parent pointer to NULL
         (*root)->leftPtr = NULL; // Set the left child pointer to NULL
         (*root)->rightPtr = NULL; // Set th right child pointer to NULL
    }else{
@@ -342,7 +335,8 @@ void insertStudent(StudentPtr *root) {
             }
         }
 
-        // Set the child pointers to NULL
+        // Set the pointers to NULL
+        tmpStudent->parentPtr = NULL; // Set the parent pointer to NULL
         tmpStudent->leftPtr = NULL; // Set the left child pointer to NULL
         tmpStudent->rightPtr = NULL; // Set th right child pointer to NULL
     }
@@ -757,7 +751,7 @@ void deleteStudent(StudentPtr *student, StudentPtr *parent) {
  * @param parent: is the parent node of the student node
  * 
  */
-StudentPtr searchStudent(StudentPtr *student, unsigned int id, StudentPtr parent) {
+StudentPtr searchStudent(StudentPtr *student, unsigned int id) {
     // Set the needed variable
     StudentPtr tmpStudent = *student;
 
@@ -768,21 +762,34 @@ StudentPtr searchStudent(StudentPtr *student, unsigned int id, StudentPtr parent
             // Check if it is the root node
             if(tmpStudent == (*student)) {
                 // Set the parent to NULL
-                parent = NULL;
+                tmpStudent->parentPtr = NULL;
             }
             
             // Return out of the function with the pointer to the found student
             return tmpStudent;
         }
         
-        // Set the parent to the parent of the student node
-        parent = tmpStudent;
+        // Check if it is the root node
+        if(tmpStudent == (*student)) {
+            // Set the parent to NULL
+            tmpStudent->parentPtr = NULL;
+        }
 
         // Check if the tmpPtr id is greater than the passed in id
         if(tmpStudent->id > id) {
+            if(tmpStudent->leftPtr != NULL) {
+                // Set the parent to the parent of the student node
+                tmpStudent->leftPtr->parentPtr = tmpStudent;
+            }
+            
             // Set the tmpPtr to the left child of tmpPtr
             tmpStudent = tmpStudent->leftPtr;
         }else{
+            if(tmpStudent->rightPtr != NULL) {
+                // Set the parent to the parent of the student node
+                tmpStudent->rightPtr->parentPtr = tmpStudent;
+            }
+            
             // Set the tmpPtr to the right child of tmpPtr
             tmpStudent = tmpStudent->rightPtr;
         }
